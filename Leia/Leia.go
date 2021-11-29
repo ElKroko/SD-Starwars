@@ -122,6 +122,23 @@ func buscar_ciudad(lista_ciudades []Ciudad, nombre_buscado string) int32 {
 //
 //		Monolytic Reads if false hay que pedir merge
 //
+func monolityc_reads(planeta string, reloj_server []int32 ) {
+	var num_servidor int32
+	num_planeta := buscar_Planeta(planeta)
+	servidor := planetas[num_planeta].ultimo_servidor
+	
+	if servidor == "10.6.43.110" {
+		num_servidor = 0
+	} else if servidor == "10.6.43.111" {
+		num_servidor = 1
+	} else {
+		num_servidor = 2
+	}
+	if planetas[num_ciudad].reloj[num_servidor] > reloj_server[num_servidor] {
+		return false
+	}
+	return true
+}
 
 //
 //		Main Game
