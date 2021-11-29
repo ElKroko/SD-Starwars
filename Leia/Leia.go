@@ -3,14 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
-	pb "lab/game/proto"
-	"log"
-	"math/rand"
-	"strconv"
-	"time"
 
 	"google.golang.org/grpc"
 )
+
+//
+//		Definicion de
+//			Variables
+//
 
 type PlayerStruct struct {
 	id    int32
@@ -20,324 +20,167 @@ type PlayerStruct struct {
 	etapa int32
 }
 
-func print_player(jugador_struct PlayerStruct) {
-	fmt.Println("")
-	fmt.Println("Struct del Jugador: ")
-	fmt.Println("Id:", strconv.Itoa(int(jugador_struct.id)))
-	fmt.Println("Alive:", strconv.FormatBool(jugador_struct.alive))
-	fmt.Println("Round:", strconv.Itoa(int(jugador_struct.round)))
-	fmt.Println("Score:", strconv.Itoa(int(jugador_struct.score)))
-	fmt.Println("Etapa:", strconv.Itoa(int(jugador_struct.etapa)))
+type Ciudad struct {
+	nombre        string
+	cant_soldados int32
 }
+
+type Planeta struct {
+	planeta         string
+	lista_ciudades  []Ciudad
+	ultimo_reloj    []int32
+	ultimo_servidor string
+}
+
+var planetas []Planeta
+
+//
+//		CRUD
+//		Structs
+//
+
+func leer_ciudades(lista_ciudades []Ciudad) {
+	for i := 0; i < len(lista_ciudades); i++ {
+		ciudad := lista_ciudades[i]
+		fmt.Println(i, " Ciudad: \t", ciudad.nombre)
+		fmt.Println("Cantidad_soldados: ", ciudad.cant_soldados)
+	}
+}
+
+func leer_struct(planeta Planeta) {
+	fmt.Println("")
+	fmt.Println("Struct del planeta:")
+	fmt.Println("nombre: \t", planeta.planeta)
+	fmt.Println("ultimo_reloj: \t", planeta.ultimo_reloj)
+	fmt.Println("ultimo_servidor \t", planeta.ultimo_servidor)
+	fmt.Println("")
+	leer_ciudades(planeta.lista_ciudades)
+	fmt.Println("")
+}
+
+/// revisar aca!
+func crear_Ciudad(nombre_ciudad string, cant_soldados int32) Ciudad {
+	ciudad := Ciudad{nombre_ciudad, cant_soldados}
+	return ciudad
+}
+
+func crear_Planeta(nombre_planeta string, ultimo_reloj []int32, ultimo_servidor string, nombre_ciudad string, cant_soldados int32) Planeta {
+	ciudad := crear_Ciudad(nombre_ciudad, cant_soldados)
+
+	lista_ciudades := [1]Ciudad{ciudad}
+	planeta := Planeta{nombre_planeta, lista_ciudades[:], ultimo_reloj[:], ultimo_servidor}
+
+	return planeta
+}
+
+// Para usar cuando se hace un get y el planeta ya existe y MONOLYTIC READS TRUE
+func update_Planeta(planeta Planeta, ultimo_reloj []int32, ultimo_servidor string, nombre_ciudad string, cant_soldados int32) {
+	esta_ciudad := buscar_ciudad(planeta.lista_ciudades, nombre_ciudad)
+	if esta_ciudad > -1 { // Que pasa si la ciudad existe
+		planeta.lista_ciudades[esta_ciudad].cant_soldados = cant_soldados
+	} else { // que pasa si la ciudad no existe
+		ciudad := crear_Ciudad(nombre_ciudad, cant_soldados)
+		planeta.lista_ciudades = append(planeta.lista_ciudades, ciudad)
+	}
+
+	planeta.ultimo_reloj = ultimo_reloj
+	planeta.ultimo_servidor = ultimo_servidor
+
+}
+
+//
+//		Busqueda
+//		structs
+//
+
+func buscar_Planeta(nombre_buscado string) int32 {
+	var planeta Planeta
+	for i := 0; i < len(planetas); i++ {
+		planeta = planetas[i]
+		if nombre_buscado == planeta.planeta {
+			return int32(i)
+		}
+	}
+	return -1
+}
+
+func buscar_ciudad(lista_ciudades []Ciudad, nombre_buscado string) int32 {
+	var ciudad Ciudad
+	for i := 0; i < len(lista_ciudades); i++ {
+		ciudad = lista_ciudades[i]
+		if nombre_buscado == ciudad.nombre {
+			return int32(i)
+		}
+	}
+	return -1
+}
+
+//
+//
+//
+
+//
+//		Monolytic Reads if false hay que pedir merge
+//
+
+//
+//		Main Game
+//
 
 func main() {
 
-	// Decidir si sera Bot o Jugador
-	var jugador bool
-
-	fmt.Println("Es usted un jugador? [1] Si [0] no")
-	fmt.Print("-> ")
-	fmt.Scanln(&jugador)
-
-	// Definicion de Variables
-
-	iniciado := false
+	activo := true
+	var accion string
+	var planeta string
+	var ciudad string
+	var cant_soldados int32
+	var reloj []int32
+	var servidor string
 
 	conn, err := grpc.Dial("localhost:8080", grpc.WithInsecure()) // Conectamos al IP de 10.6.43.109:8080, el lider.
-
 	if err != nil {
 		panic("cannot connect with server " + err.Error())
 	}
+	serviceClient := pb.newLeiaConnection(conn)
 
-	serviceClient := pb.NewCalamardoGameClient(conn)
+	fmt.Println("Bienvenida princesa Leia")
+	fmt.Print("-> ")
+	for activo {
+		fmt.Println("¿Que desea hacer?")
+		fmt.Print("1) Preguntar el número de Rebeldes en una ciudad")
+		fmt.Print("2) Cerrar la terminal")
+		fmt.Scanln(&accion)
+		if int(accion) == 1 {
+			fmt.Println("¿Que ciudad desea buscar?")
+			fmt.Scanln(&ciudad)
+			fmt.Println("¿En que planeta queda la ciudad?")
+			fmt.Scanln(&planeta)
+			res, err := serviceClient.GetCantSoldados(context.Background(), &pb.GetRequest{planeta, ciudad})
+			if err != nil {
+				panic("No se pudo hacer el GET  " + err.Error())
+			}
+			cant_soldados := res.GetCantRebeldes()
+			reloj = res.GetReloj()
+			servidor = res.GetServidor()
 
-	// Inscripcion del jugador
-
-	message := "Hola, soy jugador"
-
-	res, err := serviceClient.JoinGame(context.Background(), &pb.JoinRequest{Message: message})
-
-	if err != nil {
-		panic("No se pudo anadir el jugador  " + err.Error())
-	}
-
-	jugador_struct := PlayerStruct{res.GetIdJugador(), res.GetAlive(), res.GetRound(), 0, 0}
-
-	iniciado = true
-
-	print_player(jugador_struct)
-
-	if iniciado {
-		fmt.Println("Bienvenidx al juego del Calamardo!")
-	}
-
-	// Esperar a los jugadores a que se conecten
-
-	flag1 := true
-
-	for flag1 {
-
-		res1, err := serviceClient.StartGame(context.Background(), &pb.StartRequest{Id: jugador_struct.id, Message: "Puedo jugar?", Etapa: jugador_struct.etapa})
-		if err != nil {
-			panic("No pudimos chequear si esta inciado  " + err.Error())
-		}
-
-		if res1.GetStarted() {
-			flag1 = false
-			fmt.Println("Preparado? empezamos!")
-			fmt.Println("")
+			monolityc := monolityc_reads(planeta, ciudad)
+			for monolityc {
+				res, err := serviceClient.GetMargeLeia(context.Background(), &pb.GetRequest{planeta: planeta, ciudad: ciudad})
+				if err != nil {
+					panic("No se pudo hacer el GET  " + err.Error())
+				}
+				cant_soldados := res.GetCantRebeldes()
+				reloj = res.GetReloj()
+				servidor = res.GetServidor()
+				monolityc = monolityc_reads(planeta, ciudad)
+			}
+			update_Planeta(planeta, reloj, servidor, ciudad, cant_soldados)
+		} else if int(accion) == 2 {
+			fmt.Println("Adios")
+			activo = false
 		} else {
-			fmt.Println("Espera, aun no hay suficientes jugadores...")
-			time.Sleep(2 * time.Second)
+			fmt.Println("Escriba una opción valida")
 		}
-	}
-
-	// comienza juego 1
-
-	fmt.Println("Iniciamos el Juego 1")
-	rand.Seed(time.Now().UnixNano())
-
-	var numero int
-	ronda := jugador_struct.round
-	flag1 = true
-
-	for flag1 {
-		res1, err := serviceClient.StartGame(context.Background(), &pb.StartRequest{Id: jugador_struct.id, Message: "Puedo jugar?", Etapa: 1})
-		if err != nil {
-			panic("No pudimos chequear si esta inciado  " + err.Error())
-		}
-
-		if res1.GetStarted() {
-			flag1 = false
-			fmt.Println("Preparado? empezamos!")
-			fmt.Println("")
-		} else {
-			fmt.Println("Espera, aun no inicia el juego 1...")
-			time.Sleep(2 * time.Second)
-		}
-	}
-
-	// ==============================================================================
-	// 									Inicio Juego 1
-	// ==============================================================================
-
-	jugador_struct.etapa = 1
-
-	fmt.Println("--------------------------------")
-	fmt.Println("       Inicio del juego 1       ")
-	fmt.Println("--------------------------------")
-	fmt.Println("")
-
-	for ronda < 4 && jugador_struct.etapa == 1 {
-		// Seleccionar numero para jugar
-		if jugador {
-			fmt.Println("Juego 1: Elija un numero del 1 al 10")
-			fmt.Print("-> ")
-			fmt.Scanln(&numero)
-
-		} else {
-			numero = rand.Intn(10)
-
-		}
-		fmt.Println("La jugada, de la ronda ", ronda, "fue ", numero)
-
-		// Chequear si el numero es igual o mayor al del lider
-
-		res, err := serviceClient.JuegoMsg(context.Background(), &pb.JuegoRequest{
-			Id:     jugador_struct.id,
-			Jugada: int32(numero),
-			Round:  jugador_struct.round,
-			Score:  jugador_struct.score,
-			Etapa:  jugador_struct.etapa})
-
-		if err != nil {
-			panic("No pudimos mandar la jugada del juego 1  " + err.Error())
-		}
-
-		jugador_struct.alive = res.GetAlive()
-		jugador_struct.round = res.GetRound()
-		jugador_struct.score = res.GetScore()
-		jugador_struct.etapa = res.GetEtapa()
-
-		print_player(jugador_struct)
-
-		if !jugador_struct.alive {
-			log.Fatalln("Oh no! te han matado en el juego 1")
-		}
-
-		if jugador_struct.etapa == 2 {
-			fmt.Println("")
-			log.Println("Pasaste a la siguiente etapa!")
-		}
-		// Fin
-
-		jugador_struct.round = ronda + 1
-		ronda = jugador_struct.round
-	}
-
-	// Se calcula el numero a mandar
-	// Se manda el numero, y se espera respuesta
-
-	if !jugador_struct.alive {
-		log.Fatalln("Oh no! te han matado al final del juego 1")
-	}
-
-	// ==============================================================================
-	// 									Inicio Juego 2
-	// ==============================================================================
-
-	jugador_struct.etapa = 2
-	fmt.Println("")
-	fmt.Println("--------------------------------")
-	fmt.Println("       Inicio del juego 2       ")
-	fmt.Println("--------------------------------")
-	fmt.Println("")
-
-	// Esperamos que el juego 2 este listo
-	flag1 = true
-
-	for flag1 {
-		res1, err := serviceClient.StartGame(context.Background(), &pb.StartRequest{Id: jugador_struct.id, Message: "Puedo jugar?", Etapa: 1})
-		if err != nil {
-			panic("No pudimos chequear si esta inciado  " + err.Error())
-		}
-
-		if res1.GetStarted() {
-			flag1 = false
-			fmt.Println("Preparado? empezamos!")
-			fmt.Println("")
-		} else {
-			fmt.Println("Espera, aun no inicia el juego 2...")
-			time.Sleep(2 * time.Second)
-		}
-	}
-
-	// Generar un numero random entre 1 y 4
-	if jugador {
-		fmt.Println("Juego 2: Elija un numero del 1 al 4")
-		fmt.Print("-> ")
-		fmt.Scanln(&numero)
-	} else {
-		numero = rand.Intn(4)
-	}
-
-	// Enviar el numero al lider
-	res1, err := serviceClient.JuegoMsg(context.Background(), &pb.JuegoRequest{
-		Id:     jugador_struct.id,
-		Jugada: int32(numero),
-		Round:  jugador_struct.round,
-		Score:  jugador_struct.score,
-		Etapa:  jugador_struct.etapa})
-
-	if err != nil {
-		panic("No pudimos mandar la jugada del juego 2  " + err.Error())
-	}
-
-	jugador_struct.alive = res1.GetAlive()
-	jugador_struct.round = res1.GetRound()
-	jugador_struct.score = res1.GetScore()
-	jugador_struct.etapa = res1.GetEtapa()
-
-	print_player(jugador_struct)
-
-	// Esperar en un for la respuesta del lider sobre este numero. cuando me envie true
-	// y el estado del aliado nuevo, decidire si seguir o exit()
-	flag1 = true
-	for flag1 {
-		res1, err := serviceClient.StartGame(context.Background(), &pb.StartRequest{Id: jugador_struct.id, Message: "Puedo jugar?", Etapa: 1})
-		if err != nil {
-			panic("No pudimos chequear si esta inciado  " + err.Error())
-		}
-
-		if res1.GetStarted() {
-			flag1 = false
-			fmt.Println("Preparado? empezamos!")
-			fmt.Println("")
-		} else {
-			fmt.Println("Espera, aun no inicia el juego 3...")
-			time.Sleep(2 * time.Second)
-		}
-	}
-
-	// Revisar si estoy vivo!
-
-	resMuerte, err := serviceClient.Muerte(context.Background(), &pb.MuerteRequest{Id: jugador_struct.id})
-	if err != nil {
-		panic("No pudimos chequear si esta inciado  " + err.Error())
-	}
-
-	jugador_struct.alive = resMuerte.GetAlive()
-	if !jugador_struct.alive {
-		log.Fatalln("Oh no! te han matado al final del juego 2")
-	}
-
-	// Luego de revisar si estoy vivo, comienza el juego 3
-
-	// ==============================================================================
-	// 									Inicio Juego 3
-	// ==============================================================================
-
-	fmt.Println("--------------------------------")
-	fmt.Println("       Inicio del juego 3       ")
-	fmt.Println("--------------------------------")
-	fmt.Println("")
-
-	// Generar un numero random entre 1 y 10
-	if jugador {
-		fmt.Println("Juego 3: Elija un numero del 1 al 10")
-		fmt.Print("-> ")
-		fmt.Scanln(&numero)
-	} else {
-		numero = rand.Intn(10)
-	}
-
-	// Enviar el numero al lider
-	res2, err := serviceClient.JuegoMsg(context.Background(), &pb.JuegoRequest{
-		Id:     jugador_struct.id,
-		Jugada: int32(numero),
-		Round:  jugador_struct.round,
-		Score:  jugador_struct.score,
-		Etapa:  jugador_struct.etapa})
-
-	if err != nil {
-		panic("No pudimos mandar la jugada del juego 2  " + err.Error())
-	}
-
-	jugador_struct.alive = res2.GetAlive()
-	jugador_struct.round = res2.GetRound()
-	jugador_struct.score = res2.GetScore()
-	jugador_struct.etapa = res2.GetEtapa()
-
-	print_player(jugador_struct)
-
-	// Esperar en un for la respuesta del lider sobre este numero. cuando me envie true
-	// y el estado del aliado nuevo, decidire si seguir o exit()
-	flag1 = true
-	for flag1 {
-		res1, err := serviceClient.StartGame(context.Background(), &pb.StartRequest{Id: jugador_struct.id, Message: "Puedo jugar?", Etapa: 1})
-		if err != nil {
-			panic("No pudimos chequear si esta inciado  " + err.Error())
-		}
-
-		if res1.GetStarted() {
-			flag1 = false
-			fmt.Println("Preparado? empezamos!")
-			fmt.Println("")
-		} else {
-			fmt.Println("Espera, estamos verificando los resultados...")
-			time.Sleep(2 * time.Second)
-		}
-	}
-
-	// Revisar si estoy vivo!
-	resMuerte, err = serviceClient.Muerte(context.Background(), &pb.MuerteRequest{Id: jugador_struct.id})
-	if err != nil {
-		panic("No pudimos chequear si haz muerto... probablemente si!  " + err.Error())
-	}
-
-	jugador_struct.alive = resMuerte.GetAlive()
-	if !jugador_struct.alive {
-		log.Fatalln("Oh no! te han matado al final del juego 3")
 	}
 
 }
