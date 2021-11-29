@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "lab/proto";
+
+service StarwarsGame {
+
+    rpc GetCantSoldados (GetRequest) returns (GetReply) {}
+
+    rpc MergeLeia (MergeLeiaRequest) returns (MergeLeiaReply) {}
+}
+
+
+message GetRequest{
+    string planeta = 1;
+    string ciudad = 2;
+}
+
+message GetReply{
+    int32 cant_rebeldes = 1;
+    []int32 reloj = 2;
+    string servidor = 3;
+}
+
+message MergeLeiaRequest {
+    string planeta = 1;
+    string ciudad = 2;
+}
+
+message MergeLeiaReply {
+    int32 cant_rebeldes = 1;
+    []int32 reloj = 2;
+    string servidor = 3;
+}
