@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "lab/game/proto";
+
+// Service y messages del juego
+
+service CalamardoGame {
+
+    // Funciones de Lider
+    rpc JoinGame(JoinRequest) returns (JoinReply) {}
+
+    rpc StartGame (StartRequest) returns (StartReply) {}
+
+    rpc JuegoMsg (JuegoRequest) returns (JuegoReply) {}
+
+    rpc Muerte (MuerteRequest) returns (MuerteReply) {}
+
+
+    // Funciones de NameNode
+    rpc InsertPlays (InsertPlaysRequest) returns (InsertPlaysReply) {}
+    
+    rpc ReturnPlays (ReturnPlaysRequest) returns (ReturnPlaysReply) {}
+
+    // Funciones de DataNode
+    rpc SavePlays (SavePlaysRequest) returns (SavePlaysReply) {}
+
+    rpc SendPlays (SendPlaysRequest) returns (SendPlaysReply) {}
+
+
+}
+
+message SavePlaysRequest {
+    int32 id = 1 ;
+    int32 ronda = 2;
+    string jugada = 3;
+}
+
+message SavePlaysReply {
+    bool exito = 1 ;
+}
+
+
+
+message SendPlaysRequest {
+    int32 id = 1;
+    int32 ronda = 2;
+}
+
+message SendPlaysReply {
+    string jugada = 1;
+}
+
+
+message ReturnPlaysRequest {
+    int32 id = 1;
+}
+
+message ReturnPlaysReply {
+    string jugada = 1 ;
+}
+
+message InsertPlaysRequest {
+    int32 id = 1 ;
+    int32 ronda = 2 ;
+    string jugada = 3;
+}
+
+message InsertPlaysReply {
+    bool exito = 1;
+}
+
+message JoinRequest {
+    string message = 1;
+}
+
+message JoinReply {
+    int32 id_jugador = 1;
+    bool alive = 2;
+    int32 round = 3;
+}
+
+message StartRequest {
+    int32 id = 1;
+    string message = 2;
+    int32 etapa = 3;
+}
+
+message StartReply {
+    bool started = 1;
+}
+
+message JuegoRequest {
+    int32 id = 1;
+    int32 jugada = 2;
+    int32 round = 3;
+    int32 score = 4;
+    int32 etapa = 5;
+}
+
+message JuegoReply {
+    bool alive = 1;
+    int32 round = 2;
+    int32 score = 3;
+    int32 etapa = 4;
+}
+
+message MuerteRequest {
+    int32 id = 1;
+    int32 etapa = 2;
+}
+
+message MuerteReply {
+    int32 id = 1;
+    bool alive = 2;
+}
