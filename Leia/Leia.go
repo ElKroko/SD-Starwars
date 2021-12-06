@@ -122,8 +122,8 @@ func buscar_ciudad(lista_ciudades []Ciudad, nombre_buscado string) int32 {
 //
 //		Monolytic Reads if false hay que pedir merge
 //
-func monolityc_reads(planeta string, reloj_server []int32 ) {
-	var num_servidor int32
+func monolityc_reads(planeta string, reloj_server []int32 ) bool {
+	var num_servidor string
 	num_planeta := buscar_Planeta(planeta)
 	servidor := planetas[num_planeta].ultimo_servidor
 	
@@ -134,7 +134,7 @@ func monolityc_reads(planeta string, reloj_server []int32 ) {
 	} else {
 		num_servidor = 2
 	}
-	if planetas[num_ciudad].reloj[num_servidor] > reloj_server[num_servidor] {
+	if planetas[num_planeta].ultimo_reloj[num_servidor] > reloj_server[num_servidor] {
 		return false
 	}
 	return true
@@ -167,7 +167,7 @@ func main() {
 		fmt.Print("1) Preguntar el número de Rebeldes en una ciudad")
 		fmt.Print("2) Cerrar la terminal")
 		fmt.Scanln(&accion)
-		if int(accion) == 1 {
+		if int(accion) == "1" {
 			fmt.Println("¿Que ciudad desea buscar?")
 			fmt.Scanln(&ciudad)
 			fmt.Println("¿En que planeta queda la ciudad?")
@@ -180,19 +180,18 @@ func main() {
 			reloj = res.GetReloj()
 			servidor = res.GetServidor()
 
-			monolityc := monolityc_reads(planeta, ciudad)
-			for monolityc {
-				res, err := serviceClient.GetMargeLeia(context.Background(), &pb.GetRequest{planeta: planeta, ciudad: ciudad})
+			monolityc := monolityc_reads(planeta, reloj)
+			if monolityc == false {
+				res, err := serviceClient.MargeLeia(context.Background(), &pb.GetRequest{planeta: planeta, ciudad: ciudad})
 				if err != nil {
 					panic("No se pudo hacer el GET  " + err.Error())
 				}
 				cant_soldados := res.GetCantRebeldes()
 				reloj = res.GetReloj()
 				servidor = res.GetServidor()
-				monolityc = monolityc_reads(planeta, ciudad)
 			}
 			update_Planeta(planeta, reloj, servidor, ciudad, cant_soldados)
-		} else if int(accion) == 2 {
+		} else if int(accion) == "2" {
 			fmt.Println("Adios")
 			activo = false
 		} else {
