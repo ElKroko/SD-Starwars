@@ -19,7 +19,7 @@ message GetRequest{
 
 message GetReply{
     int32 cant_rebeldes = 1;
-    []int32 reloj = 2;
+    repeated int32 reloj = 2;
     string servidor = 3;
 }
 
@@ -30,6 +30,6 @@ message MergeLeiaRequest {
 
 message MergeLeiaReply {
     int32 cant_rebeldes = 1;
-    []int32 reloj = 2;
+    repeated int32 reloj = 2;
     string servidor = 3;
 }
