@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-
+	pb "lab/proto"
 	"google.golang.org/grpc"
 )
 
@@ -118,11 +118,11 @@ func buscar_ciudad(lista_ciudades []Ciudad, nombre_buscado string) int32 {
 //
 //		Read you Writes if false hay que pedir merge
 //
-func read_your_write(planeta string, reloj_server []int32 ) bool {
+func read_your_write(planeta string, reloj_server []int32) bool {
 	var num_servidor int32
 	num_planeta := buscar_Planeta(planeta)
 	servidor := planetas[num_planeta].ultimo_servidor
-	
+
 	if servidor == "10.6.43.110" {
 		num_servidor = 0
 	} else if servidor == "10.6.43.111" {
@@ -140,7 +140,6 @@ func read_your_write(planeta string, reloj_server []int32 ) bool {
 //		Main Game
 //
 
-
 func main() {
 
 	activo := true
@@ -156,7 +155,7 @@ func main() {
 	if err != nil {
 		panic("cannot connect with server " + err.Error())
 	}
-	serviceClient := pb.newInfromanteConnection(conn)
+	serviceClient := pb.StarwarsGameClient(conn)
 
 	fmt.Println("Bienvenida Informante")
 	fmt.Print("-> ")

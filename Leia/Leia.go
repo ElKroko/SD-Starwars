@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-
 	"google.golang.org/grpc"
+	pb "lab3/proto"
 )
 
 //
@@ -122,11 +122,11 @@ func buscar_ciudad(lista_ciudades []Ciudad, nombre_buscado string) int32 {
 //
 //		Monolytic Reads if false hay que pedir merge
 //
-func monolityc_reads(planeta string, reloj_server []int32 ) bool {
-	var num_servidor string
+func monolityc_reads(planeta string, reloj_server []int32) bool {
+	var num_servidor int32
 	num_planeta := buscar_Planeta(planeta)
 	servidor := planetas[num_planeta].ultimo_servidor
-	
+
 	if servidor == "10.6.43.110" {
 		num_servidor = 0
 	} else if servidor == "10.6.43.111" {
@@ -158,7 +158,7 @@ func main() {
 	if err != nil {
 		panic("cannot connect with server " + err.Error())
 	}
-	serviceClient := pb.newLeiaConnection(conn)
+	serviceClient := pb.NewStarwarsGameClient(conn)
 
 	fmt.Println("Bienvenida princesa Leia")
 	fmt.Print("-> ")
@@ -167,31 +167,31 @@ func main() {
 		fmt.Print("1) Preguntar el número de Rebeldes en una ciudad")
 		fmt.Print("2) Cerrar la terminal")
 		fmt.Scanln(&accion)
-		if int(accion) == "1" {
+		if accion == "1" {
 			fmt.Println("¿Que ciudad desea buscar?")
 			fmt.Scanln(&ciudad)
 			fmt.Println("¿En que planeta queda la ciudad?")
 			fmt.Scanln(&planeta)
-			res, err := serviceClient.GetCantSoldados(context.Background(), &pb.GetRequest{planeta, ciudad})
+			res, err := serviceClient.GetCantSoldadosBroker(context.Background(), &pb.GetBrokerRequest{Planeta: planeta, Ciudad: ciudad})
 			if err != nil {
 				panic("No se pudo hacer el GET  " + err.Error())
 			}
-			cant_soldados := res.GetCantRebeldes()
-			reloj = res.GetReloj()
+			// cant_soldados = res.GetRebeldes()
+			// reloj = res.GetReloj()
 			servidor = res.GetServidor()
 
 			monolityc := monolityc_reads(planeta, reloj)
 			if monolityc == false {
-				res, err := serviceClient.MargeLeia(context.Background(), &pb.GetRequest{planeta: planeta, ciudad: ciudad})
+				res, err := serviceClient.MargeLeia(context.Background(), &pb.MergeLeiaRequest{Planeta: planeta, Ciudad: ciudad})
 				if err != nil {
 					panic("No se pudo hacer el GET  " + err.Error())
 				}
-				cant_soldados := res.GetCantRebeldes()
+				cant_soldados = res.GetRebeldes()
 				reloj = res.GetReloj()
 				servidor = res.GetServidor()
 			}
-			update_Planeta(planeta, reloj, servidor, ciudad, cant_soldados)
-		} else if int(accion) == "2" {
+			update_Planeta(planetas[buscar_Planeta(planeta)], reloj, servidor, ciudad, cant_soldados)
+		} else if accion == "2" {
 			fmt.Println("Adios")
 			activo = false
 		} else {
