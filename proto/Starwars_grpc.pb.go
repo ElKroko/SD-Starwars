@@ -18,7 +18,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StarwarsGameClient interface {
-	GetCantSoldados(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetReply, error)
+	GetCantSoldadosBroker(ctx context.Context, in *GetBrokerRequest, opts ...grpc.CallOption) (*GetBrokerReply, error)
+	GetCantSoldadosServer(ctx context.Context, in *GetServerRequest, opts ...grpc.CallOption) (*GetServerReply, error)
 	MergeLeia(ctx context.Context, in *MergeLeiaRequest, opts ...grpc.CallOption) (*MergeLeiaReply, error)
 }
 
@@ -30,9 +31,18 @@ func NewStarwarsGameClient(cc grpc.ClientConnInterface) StarwarsGameClient {
 	return &starwarsGameClient{cc}
 }
 
-func (c *starwarsGameClient) GetCantSoldados(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetReply, error) {
-	out := new(GetReply)
-	err := c.cc.Invoke(ctx, "/proto.StarwarsGame/GetCantSoldados", in, out, opts...)
+func (c *starwarsGameClient) GetCantSoldadosBroker(ctx context.Context, in *GetBrokerRequest, opts ...grpc.CallOption) (*GetBrokerReply, error) {
+	out := new(GetBrokerReply)
+	err := c.cc.Invoke(ctx, "/proto.StarwarsGame/GetCantSoldadosBroker", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *starwarsGameClient) GetCantSoldadosServer(ctx context.Context, in *GetServerRequest, opts ...grpc.CallOption) (*GetServerReply, error) {
+	out := new(GetServerReply)
+	err := c.cc.Invoke(ctx, "/proto.StarwarsGame/GetCantSoldadosServer", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +62,8 @@ func (c *starwarsGameClient) MergeLeia(ctx context.Context, in *MergeLeiaRequest
 // All implementations must embed UnimplementedStarwarsGameServer
 // for forward compatibility
 type StarwarsGameServer interface {
-	GetCantSoldados(context.Context, *GetRequest) (*GetReply, error)
+	GetCantSoldadosBroker(context.Context, *GetBrokerRequest) (*GetBrokerReply, error)
+	GetCantSoldadosServer(context.Context, *GetServerRequest) (*GetServerReply, error)
 	MergeLeia(context.Context, *MergeLeiaRequest) (*MergeLeiaReply, error)
 	mustEmbedUnimplementedStarwarsGameServer()
 }
@@ -61,8 +72,11 @@ type StarwarsGameServer interface {
 type UnimplementedStarwarsGameServer struct {
 }
 
-func (UnimplementedStarwarsGameServer) GetCantSoldados(context.Context, *GetRequest) (*GetReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCantSoldados not implemented")
+func (UnimplementedStarwarsGameServer) GetCantSoldadosBroker(context.Context, *GetBrokerRequest) (*GetBrokerReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCantSoldadosBroker not implemented")
+}
+func (UnimplementedStarwarsGameServer) GetCantSoldadosServer(context.Context, *GetServerRequest) (*GetServerReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCantSoldadosServer not implemented")
 }
 func (UnimplementedStarwarsGameServer) MergeLeia(context.Context, *MergeLeiaRequest) (*MergeLeiaReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MergeLeia not implemented")
@@ -80,20 +94,38 @@ func RegisterStarwarsGameServer(s grpc.ServiceRegistrar, srv StarwarsGameServer)
 	s.RegisterService(&StarwarsGame_ServiceDesc, srv)
 }
 
-func _StarwarsGame_GetCantSoldados_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRequest)
+func _StarwarsGame_GetCantSoldadosBroker_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBrokerRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StarwarsGameServer).GetCantSoldados(ctx, in)
+		return srv.(StarwarsGameServer).GetCantSoldadosBroker(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.StarwarsGame/GetCantSoldados",
+		FullMethod: "/proto.StarwarsGame/GetCantSoldadosBroker",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StarwarsGameServer).GetCantSoldados(ctx, req.(*GetRequest))
+		return srv.(StarwarsGameServer).GetCantSoldadosBroker(ctx, req.(*GetBrokerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StarwarsGame_GetCantSoldadosServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetServerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StarwarsGameServer).GetCantSoldadosServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.StarwarsGame/GetCantSoldadosServer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StarwarsGameServer).GetCantSoldadosServer(ctx, req.(*GetServerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -124,8 +156,12 @@ var StarwarsGame_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*StarwarsGameServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetCantSoldados",
-			Handler:    _StarwarsGame_GetCantSoldados_Handler,
+			MethodName: "GetCantSoldadosBroker",
+			Handler:    _StarwarsGame_GetCantSoldadosBroker_Handler,
+		},
+		{
+			MethodName: "GetCantSoldadosServer",
+			Handler:    _StarwarsGame_GetCantSoldadosServer_Handler,
 		},
 		{
 			MethodName: "MergeLeia",

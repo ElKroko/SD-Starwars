@@ -2,23 +2,31 @@ syntax = "proto3";
 
 package proto;
 
-option go_package = "lab/proto";
+option go_package = "lab3/proto";
 
 service StarwarsGame {
 
-    rpc GetCantSoldados (GetRequest) returns (GetReply) {}
-
+    rpc GetCantSoldadosBroker (GetBrokerRequest) returns (GetBrokerReply) {}
+    rpc GetCantSoldadosServer (GetServerRequest) returns (GetServerReply) {}
     rpc MergeLeia (MergeLeiaRequest) returns (MergeLeiaReply) {}
 }
 
 
-message GetRequest{
+message GetBrokerRequest{
     string planeta = 1;
     string ciudad = 2;
 }
 
-message GetReply{
-    int32 cant_rebeldes = 1;
+message GetBrokerReply{
+    string servidor = 3;
+}
+
+message GetServerRequest{
+    string planeta = 1;
+    string ciudad = 2;
+}
+message GetServerReply{
+    int32 rebeldes = 1;
     repeated int32 reloj = 2;
     string servidor = 3;
 }
@@ -29,7 +37,7 @@ message MergeLeiaRequest {
 }
 
 message MergeLeiaReply {
-    int32 cant_rebeldes = 1;
+    int32 rebeldes = 1;
     repeated int32 reloj = 2;
     string servidor = 3;
 }
