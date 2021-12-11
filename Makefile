@@ -1,10 +1,10 @@
-lider:
-	echo "Ejecutando lider"
-	go run server/Lider.go
+leia:
+	echo "Ejecutando Leia"
+	go run Leia/Leia.go
 
-namenode:
-	echo "Ejecutando namenode"
-	go run server/NameNode.go
+broker:
+	echo "Ejecutando Broker"
+	go run Server/Broker.go
 
 pozo:
 	echo "Ejecutando pozo"
