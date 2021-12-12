@@ -6,11 +6,17 @@ option go_package = "lab3/proto";
 
 service StarwarsGame {
 
+    // Funciones para Leia
     rpc GetCantSoldadosBroker (GetBrokerRequest) returns (GetBrokerReply) {}
     rpc GetCantSoldadosServer (GetServerRequest) returns (GetServerReply) {}
     rpc MergeLeia (MergeLeiaRequest) returns (MergeLeiaReply) {}
-}
 
+    // Funciones para Informantes
+    rpc AskForServers (AskForServersRequest) returns (AskForServersReply) {}
+
+    rpc AskedServer (AskedServerRequest) returns (AskedServerReply) {}
+
+}
 
 message GetBrokerRequest{
     string planeta = 1;
@@ -18,6 +24,8 @@ message GetBrokerRequest{
 }
 
 message GetBrokerReply{
+    int32 rebeldes = 1;
+    repeated int32 reloj = 2;
     string servidor = 3;
 }
 
@@ -28,7 +36,6 @@ message GetServerRequest{
 message GetServerReply{
     int32 rebeldes = 1;
     repeated int32 reloj = 2;
-    string servidor = 3;
 }
 
 message MergeLeiaRequest {
@@ -40,4 +47,21 @@ message MergeLeiaReply {
     int32 rebeldes = 1;
     repeated int32 reloj = 2;
     string servidor = 3;
+}
+
+message AskForServersRequest {
+    string comando = 1;
+}
+
+message AskForServersReply {
+    string servidor = 1;
+}
+
+message AskedServerRequest {
+    string informante = 1;
+    string comando = 2;
+}
+
+message AskedServerReply {
+    repeated int32 reloj = 1;
 }

@@ -18,9 +18,13 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StarwarsGameClient interface {
+	// Funciones para Leia
 	GetCantSoldadosBroker(ctx context.Context, in *GetBrokerRequest, opts ...grpc.CallOption) (*GetBrokerReply, error)
 	GetCantSoldadosServer(ctx context.Context, in *GetServerRequest, opts ...grpc.CallOption) (*GetServerReply, error)
 	MergeLeia(ctx context.Context, in *MergeLeiaRequest, opts ...grpc.CallOption) (*MergeLeiaReply, error)
+	// Funciones para Informantes
+	AskForServers(ctx context.Context, in *AskForServersRequest, opts ...grpc.CallOption) (*AskForServersReply, error)
+	AskedServer(ctx context.Context, in *AskedServerRequest, opts ...grpc.CallOption) (*AskedServerReply, error)
 }
 
 type starwarsGameClient struct {
@@ -58,13 +62,35 @@ func (c *starwarsGameClient) MergeLeia(ctx context.Context, in *MergeLeiaRequest
 	return out, nil
 }
 
+func (c *starwarsGameClient) AskForServers(ctx context.Context, in *AskForServersRequest, opts ...grpc.CallOption) (*AskForServersReply, error) {
+	out := new(AskForServersReply)
+	err := c.cc.Invoke(ctx, "/proto.StarwarsGame/AskForServers", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *starwarsGameClient) AskedServer(ctx context.Context, in *AskedServerRequest, opts ...grpc.CallOption) (*AskedServerReply, error) {
+	out := new(AskedServerReply)
+	err := c.cc.Invoke(ctx, "/proto.StarwarsGame/AskedServer", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StarwarsGameServer is the server API for StarwarsGame service.
 // All implementations must embed UnimplementedStarwarsGameServer
 // for forward compatibility
 type StarwarsGameServer interface {
+	// Funciones para Leia
 	GetCantSoldadosBroker(context.Context, *GetBrokerRequest) (*GetBrokerReply, error)
 	GetCantSoldadosServer(context.Context, *GetServerRequest) (*GetServerReply, error)
 	MergeLeia(context.Context, *MergeLeiaRequest) (*MergeLeiaReply, error)
+	// Funciones para Informantes
+	AskForServers(context.Context, *AskForServersRequest) (*AskForServersReply, error)
+	AskedServer(context.Context, *AskedServerRequest) (*AskedServerReply, error)
 	mustEmbedUnimplementedStarwarsGameServer()
 }
 
@@ -80,6 +106,12 @@ func (UnimplementedStarwarsGameServer) GetCantSoldadosServer(context.Context, *G
 }
 func (UnimplementedStarwarsGameServer) MergeLeia(context.Context, *MergeLeiaRequest) (*MergeLeiaReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MergeLeia not implemented")
+}
+func (UnimplementedStarwarsGameServer) AskForServers(context.Context, *AskForServersRequest) (*AskForServersReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AskForServers not implemented")
+}
+func (UnimplementedStarwarsGameServer) AskedServer(context.Context, *AskedServerRequest) (*AskedServerReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AskedServer not implemented")
 }
 func (UnimplementedStarwarsGameServer) mustEmbedUnimplementedStarwarsGameServer() {}
 
@@ -148,6 +180,42 @@ func _StarwarsGame_MergeLeia_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StarwarsGame_AskForServers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AskForServersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StarwarsGameServer).AskForServers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.StarwarsGame/AskForServers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StarwarsGameServer).AskForServers(ctx, req.(*AskForServersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StarwarsGame_AskedServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AskedServerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StarwarsGameServer).AskedServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.StarwarsGame/AskedServer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StarwarsGameServer).AskedServer(ctx, req.(*AskedServerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StarwarsGame_ServiceDesc is the grpc.ServiceDesc for StarwarsGame service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -166,6 +234,14 @@ var StarwarsGame_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "MergeLeia",
 			Handler:    _StarwarsGame_MergeLeia_Handler,
+		},
+		{
+			MethodName: "AskForServers",
+			Handler:    _StarwarsGame_AskForServers_Handler,
+		},
+		{
+			MethodName: "AskedServer",
+			Handler:    _StarwarsGame_AskedServer_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

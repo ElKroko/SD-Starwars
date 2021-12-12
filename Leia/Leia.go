@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc"
 	pb "lab3/proto"
+
+	"google.golang.org/grpc"
 )
 
 //
@@ -163,14 +164,14 @@ func main() {
 	fmt.Println("Bienvenida princesa Leia")
 	fmt.Print("-> ")
 	for activo {
-		fmt.Println("¿Que desea hacer?")
-		fmt.Println("1) Preguntar el número de Rebeldes en una ciudad")
+		fmt.Println("Que desea hacer?")
+		fmt.Println("1) Preguntar el numero de Rebeldes en una ciudad")
 		fmt.Println("2) Cerrar la terminal")
 		fmt.Scanln(&accion)
 		if accion == "1" {
-			fmt.Println("¿Que ciudad desea buscar?")
+			fmt.Println("Que ciudad desea buscar?")
 			fmt.Scanln(&ciudad)
-			fmt.Println("¿En que planeta queda la ciudad?")
+			fmt.Println("En que planeta queda la ciudad?")
 			fmt.Scanln(&planeta)
 			res, err := serviceClient.GetCantSoldadosBroker(context.Background(), &pb.GetBrokerRequest{Planeta: planeta, Ciudad: ciudad})
 			if err != nil {
@@ -195,7 +196,7 @@ func main() {
 			fmt.Println("Adios")
 			activo = false
 		} else {
-			fmt.Println("Escriba una opción valida")
+			fmt.Println("Escriba una opcion valida")
 		}
 	}
 

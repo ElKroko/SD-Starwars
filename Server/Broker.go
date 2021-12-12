@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc"
 	pb "lab3/proto"
 	"log"
 	"math/rand"
 	"net"
 	"time"
-
-	"google.golang.org/grpc"
 )
 
 var lista_servidores = [3]string{"1", "2", "3"}
@@ -20,20 +19,32 @@ type server struct {
 }
 
 //
-//		Funciones de GRPC
+//		Funciones de GRPC  -   Leia
 //
 
 func (s *server) GetCantSoldadosBroker(ctx context.Context, in *pb.GetBrokerRequest) (*pb.GetBrokerReply, error) {
-	log.Printf("Estan haciendo request!")
+	log.Printf("Estan haciendo request desde Leia")
 	cant_solicitudes += 1
 	planeta := in.GetPlaneta()
 	ciudad := in.GetCiudad()
 
 	log.Printf("Planeta: %s \t Ciudad: %s", planeta, ciudad)
 
-	servidor := getRandomServer()
+	servidor := getRandomServer() // Este server tiene que ser utilizado en vez de localhost
+
+	conn, err := grpc.Dial("localhost:8081", grpc.WithInsecure()) // Conectamos al IP de 10.6.43.109:8080, el lider.
+	if err != nil {
+		panic("cannot connect with server " + err.Error())
+	}
+	serviceClient := pb.NewStarwarsGameClient(conn)
+
+	res, err := serviceClient.GetCantSoldadosServer(context.Background(), &pb.GetServerRequest{Planeta: planeta, Ciudad: ciudad})
+
+	cant_soldados := res.GetRebeldes()
+	reloj := res.GetReloj()
+
 	log.Println("Se ha elegido el servidor: ", servidor)
-	return &pb.GetBrokerReply{Servidor: servidor}, nil
+	return &pb.GetBrokerReply{Rebeldes: cant_soldados, Reloj: reloj, Servidor: servidor}, nil
 
 }
 
@@ -53,6 +64,25 @@ func (s *server) MergeLeia(ctx context.Context, in *pb.MergeLeiaRequest) (*pb.Me
 	servidor := getRandomServer()
 
 	return &pb.MergeLeiaReply{Rebeldes: int32(cant_rebeldes), Reloj: reloj, Servidor: servidor}, nil
+
+}
+
+//
+//		Funciones de GRPC  -   Informantes
+//
+
+func (s *server) AskForServers(ctx context.Context, in *pb.AskForServersRequest) (*pb.AskForServersReply, error) {
+	log.Println("El informante esta preguntando por un servidor")
+
+	comando := in.GetComando()
+
+	servidor := getRandomServer()
+
+	log.Println(comando)
+	log.Println("Servidor enviado: ", servidor)
+	fmt.Println("")
+
+	return &pb.AskForServersReply{Servidor: servidor}, nil
 
 }
 
