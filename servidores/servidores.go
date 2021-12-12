@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	pb "lab3/proto"
 	"log"
@@ -208,6 +209,17 @@ func merge(nombre_planeta string) string {
 	}
 
 	return nuevo_texto
+}
+
+func (s *server) GetCantSoldadosServer(ctx context.Context, in *pb.GetServerRequest) (*pb.GetServerReply, error) {
+	log.Printf("Estan haciendo request!")
+	planeta := in.GetPlaneta()
+	ciudad := in.GetCiudad()
+
+	cant_soldados := obtener_rebeldes(planeta, ciudad)
+
+	return &pb.GetServerReply{cant_soldados: cant_soldados}, nil
+
 }
 
 func main() {

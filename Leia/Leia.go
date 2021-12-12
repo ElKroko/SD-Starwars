@@ -164,8 +164,8 @@ func main() {
 	fmt.Print("-> ")
 	for activo {
 		fmt.Println("¿Que desea hacer?")
-		fmt.Print("1) Preguntar el número de Rebeldes en una ciudad")
-		fmt.Print("2) Cerrar la terminal")
+		fmt.Println("1) Preguntar el número de Rebeldes en una ciudad")
+		fmt.Println("2) Cerrar la terminal")
 		fmt.Scanln(&accion)
 		if accion == "1" {
 			fmt.Println("¿Que ciudad desea buscar?")
@@ -182,7 +182,7 @@ func main() {
 
 			monolityc := monolityc_reads(planeta, reloj)
 			if monolityc == false {
-				res, err := serviceClient.MargeLeia(context.Background(), &pb.MergeLeiaRequest{Planeta: planeta, Ciudad: ciudad})
+				res, err := serviceClient.MergeLeia(context.Background(), &pb.MergeLeiaRequest{Planeta: planeta, Ciudad: ciudad})
 				if err != nil {
 					panic("No se pudo hacer el GET  " + err.Error())
 				}
