@@ -27,6 +27,8 @@ type Planeta struct {
 
 var planetas []Planeta
 
+var num_servidor int32 = 1 // Cambiar 1, 2 o 3 segun el servidor a ejecutar.
+
 func buscar_Planeta(nombre_buscado string) int32 {
 	var planeta Planeta
 	for i := 0; i < len(planetas); i++ {
@@ -47,7 +49,7 @@ func escribir_archivo(nombre_archivo string, texto string) {
 
 	defer f.Close()
 
-	if _, err = f.WriteString(texto); err != nil {
+	if _, err = f.WriteString(texto + "\n"); err != nil {
 		panic(err)
 	}
 
@@ -78,7 +80,10 @@ func log_string() string {
 
 		for scanner.Scan() {
 			line = scanner.Text()
-			nuevo_texto = nuevo_texto + line + "\n"
+			nuevo_texto = nuevo_texto + line
+			if i < len(planetas)-1 {
+				nuevo_texto = nuevo_texto + "\n"
+			}
 		}
 	}
 
@@ -106,16 +111,37 @@ func crear_planeta(nombre_planeta string) {
 	planetas = append(planetas, nuevo_planeta)
 }
 
-func actualizar_reloj(nombre_planeta string, reloj []int32) {
+func actualizar_reloj(nombre_planeta string, num_servidor int32) []int32 {
 	for i := 0; i < len(planetas); i++ {
 		if planetas[i].nombre_planeta == nombre_planeta {
-			planetas[i].reloj = reloj
+			planetas[i].reloj[num_servidor] = planetas[i].reloj[num_servidor] + 1
+			return planetas[i].reloj
 		}
 	}
+	return []int32{-1, -1, -1}
+}
+
+func obtener_reloj(nombre_planeta string) {
+	return planetas[buscar_Planeta(nombre_planeta)].reloj
 }
 
 func reloj_string() string {
+	var nombre_planeta string
+	var planeta Planeta
+	var reloj string
+	nuevo_texto := ""
+	for i := 0; i < len(planetas); i++ {
+		planeta = planetas[i]
+		nombre_planeta = planeta.nombre_planeta
+		reloj = strconv.Itoa(int(planeta.reloj[0])) + "," + strconv.Itoa(int(planeta.reloj[1])) + "," + strconv.Itoa(int(planeta.reloj[2]))
 
+		nuevo_texto = nuevo_texto + nombre_planeta + " " + reloj
+		if i < len(planetas)-1 {
+			nuevo_texto = nuevo_texto + "\n"
+		}
+	}
+
+	return nuevo_texto
 }
 
 func existe_ciudad(nombre_planeta string, nombre_ciudad string) bool {
@@ -195,33 +221,32 @@ func actualizar_soldados_ciudad(nombre_planeta string, nombre_ciudad string, can
 
 }
 
-func eliminar_ciudad(nombre_planeta string, nombre_ciudad string) bool {
+func eliminar_ciudad(nombre_planeta string, nombre_ciudad string) {
 
-	f, err := os.Open(nombre_planeta + ".txt")
-	if err != nil {
-		return false
-	}
-	defer f.Close()
+	if existe_planeta(nombre_planeta) {
+		if existe_ciudad(nombre_planeta, nombre_ciudad) {
+			f, _ := os.Open(nombre_planeta + ".txt")
+			defer f.Close()
 
-	// Splits on newlines by default.
-	scanner := bufio.NewScanner(f)
+			// Splits on newlines by default.
+			scanner := bufio.NewScanner(f)
 
-	nuevo_texto := ""
-	for scanner.Scan() {
-		if strings.Contains(scanner.Text(), nombre_ciudad) {
+			nuevo_texto := ""
+			for scanner.Scan() {
+				if strings.Contains(scanner.Text(), nombre_ciudad) {
 
-		} else {
-			nuevo_texto = nuevo_texto + scanner.Text() + "\n"
+				} else {
+					nuevo_texto = nuevo_texto + scanner.Text() + "\n"
+				}
+			}
+			e := os.Remove(nombre_planeta + ".txt")
+			if e != nil {
+				log.Fatal(e)
+			}
+			crear_planeta(nombre_planeta)
+			escribir_archivo(nombre_planeta, nuevo_texto)
 		}
 	}
-	e := os.Remove(nombre_planeta + ".txt")
-	if e != nil {
-		log.Fatal(e)
-	}
-	crear_planeta(nombre_planeta)
-	escribir_archivo(nombre_planeta, nuevo_texto)
-	return true
-
 }
 
 func obtener_rebeldes(nombre_planeta string, nombre_ciudad string) int32 {
@@ -246,29 +271,35 @@ func obtener_rebeldes(nombre_planeta string, nombre_ciudad string) int32 {
 	return -1
 }
 
-func merge(log_recibido string) {
+func merge(log_recibido string, num_servidor_log int32) {
 	lineas := strings.Split(log_recibido, "\n")
 	var nombre_planeta string
+	var nombre_ciudad string
+	var nuevo_nombre_ciudad string
+	var accion string
+	var linea string
+	var cant_soldados int32
+	var temp_int int
 	for i := 0; i < len(lineas); i++ {
-		nombre_planeta = ""
-		f, err := os.Open(nombre_planeta + ".txt")
-		if err != nil {
-			//ver si retornar algo
-			log.Println("Error en el merge!")
+		linea = lineas[i]
+		nombre_planeta = strings.Split(linea, " ")[1]
+		nombre_ciudad = strings.Split(linea, " ")[2]
+		accion = strings.Split(linea, " ")[0]
+		if accion == "UpdateNumber" {
+			temp_int, _ = strconv.Atoi(strings.Split(linea, " ")[3])
+			cant_soldados = int32(temp_int)
+			actualizar_soldados_ciudad(nombre_planeta, nombre_ciudad, cant_soldados)
+		} else if accion == "AddCity" {
+			temp_int, _ = strconv.Atoi(strings.Split(linea, " ")[3])
+			cant_soldados = int32(temp_int)
+			crear_ciudad(nombre_planeta, nombre_ciudad, cant_soldados)
+		} else if accion == "UpdateName" {
+			nuevo_nombre_ciudad = strings.Split(linea, " ")[3]
+			actualizar_nombre_ciudad(nombre_planeta, nombre_ciudad, nuevo_nombre_ciudad)
+		} else if accion == "DeleteCity" {
+			eliminar_ciudad(nombre_planeta, nombre_ciudad)
 		}
-		defer f.Close()
-
-		// Splits on newlines by default.
-		scanner := bufio.NewScanner(f)
-
-		line := ""
-		nuevo_texto := ""
-		var nombre_ciudad string
-		for scanner.Scan() {
-			line = scanner.Text()
-			nombre_ciudad = strings.Split(line, " ")[1]
-			nuevo_texto = nuevo_texto + line + "\n" + nombre_ciudad //sacar nombre_ciudad
-		}
+		actualizar_reloj(nombre_planeta, num_servidor_log)
 	}
 
 }
@@ -289,28 +320,32 @@ func clean_logs() {
 	}
 }
 
-// func merge_todo() {
-// 	conn, err := grpc.Dial("localhost:8080", grpc.WithInsecure()) // Conectamos al IP de 10.6.43.109:8080, el lider.
-// 	if err != nil {
-// 		panic("cannot connect with server " + err.Error())
-// 	}
-// 	serviceClient := pb.NewStarwarsGameClient(conn)
-// 	res, err := serviceClient.GetLogs(context.Background(), &pb.GetLogs{})
-// 	if err != nil {
-// 		panic("No se pudo hacer conexion de merge  " + err.Error())
-// 	}
-// 	log2 := res.GetLog()
-// 	res2, err2 := serviceClient.GetLogs(context.Background(), &pb.GetLogs{})
-// 	if err2 != nil {
-// 		panic("No se pudo hacer conexion de merge  " + err.Error())
-// 	}
-// 	log3 := res2.GetLog()
-// 	// res, err := serviceClient.PostReloj(context.Background(), &pb.PostReloj{})
-// 	// if err != nil {
-// 	// 	panic("No se pudo hacer conexion de merge  " + err.Error())
-// 	// }
-// 	fmt.Println("Merge realizado")
-// }
+func merge_todo() {
+	conn, err := grpc.Dial("localhost:8081", grpc.WithInsecure()) // Conectamos al IP de 10.6.43.109:8080, el lider.
+	if err != nil {
+		panic("cannot connect with server " + err.Error())
+	}
+	serviceClient := pb.NewStarwarsGameClient(conn)
+	res, err := serviceClient.GetLogs(context.Background(), &pb.GetLogsRequest{})
+	if err != nil {
+		panic("No se pudo hacer conexion de merge  " + err.Error())
+	}
+	log2 := res.GetLog()
+	num_servidor_log := res.GetServidor()
+	merge(log2, num_servidor_log)
+	res2, err2 := serviceClient.GetLogs(context.Background(), &pb.GetLogsRequest{})
+	if err2 != nil {
+		panic("No se pudo hacer conexion de merge  " + err.Error())
+	}
+	log3 := res2.GetLog()
+	num_servidor_log = res.GetServidor()
+	merge(log3, num_servidor_log)
+	// res, err := serviceClient.PostReloj(context.Background(), &pb.PostReloj{})
+	// if err != nil {
+	// 	panic("No se pudo hacer conexion de merge  " + err.Error())
+	// }
+	fmt.Println("Merge realizado")
+}
 
 func actualizar_merge_archivos(data string) {
 	lineas := strings.Split(data, "\n")
@@ -351,17 +386,25 @@ func actualizar_merge_reloj(data string) {
 		planeta := linea[0]
 		reloj_tmp, _ = strconv.Atoi(strings.Split(linea[1], ",")[0])
 		reloj[0] = int32(reloj_tmp)
+		actualizar_reloj(planeta, 0)
 		reloj_tmp, _ = strconv.Atoi(strings.Split(linea[1], ",")[1])
 		reloj[1] = int32(reloj_tmp)
+		actualizar_reloj(planeta, 1)
 		reloj_tmp, _ = strconv.Atoi(strings.Split(linea[1], ",")[2])
 		reloj[2] = int32(reloj_tmp)
-		actualizar_reloj(planeta, reloj)
+		actualizar_reloj(planeta, 2)
 	}
 }
 
 //
 // Funciones GRPC
 //
+
+func (s *server) GetLogs(ctx context.Context, in *pb.GetLogsRequest) (*pb.GetLogsReply, error) {
+	log.Println("Recibi GetLogs de: ", in.GetNumserver())
+	log_string := log_string()
+	return &pb.GetLogsReply{Log: log_string, Servidor: num_servidor}, nil
+}
 
 func (s *server) GetCantSoldadosServer(ctx context.Context, in *pb.GetServerRequest) (*pb.GetServerReply, error) {
 	log.Printf("Estan haciendo request!")
@@ -382,10 +425,48 @@ func (s *server) AskedServer(ctx context.Context, in *pb.AskedServerRequest) (*p
 	comando := in.GetComando()
 	log.Println("El comando es: \t", comando)
 
-	var reloj = []int32{1, 0, 0}
+	var reloj []int32
 
 	// Leer el comando, y enviar a las funciones correspondientes...
 	// Todas tienen que responder un reloj.
+
+	splitted_comando := strings.Split(comando, " ")
+
+	if splitted_comando[0] == "AddCity" {
+		log.Println("[AddCity]")
+		nombre_planeta := splitted_comando[1]
+		nombre_ciudad := splitted_comando[2]
+		string_soldados := splitted_comando[3]
+		int_soldados, _ := strconv.Atoi(string_soldados)
+		cant_soldados := int32(int_soldados)
+		crear_ciudad(nombre_planeta, nombre_ciudad, cant_soldados)
+		reloj = actualizar_reloj(nombre_planeta, num_servidor)
+
+	} else if splitted_comando[0] == "UpdateName" {
+		log.Println("[UpdateName]")
+		nombre_planeta := splitted_comando[1]
+		nombre_ciudad := splitted_comando[2]
+		nuevo_nombre_ciudad := splitted_comando[3]
+		actualizar_nombre_ciudad(nombre_planeta, nombre_ciudad, nuevo_nombre_ciudad)
+		reloj = actualizar_reloj(nombre_planeta, num_servidor)
+
+	} else if splitted_comando[0] == "UpdateNumber" {
+		log.Println("[UpdateNumber]")
+		nombre_planeta := splitted_comando[1]
+		nombre_ciudad := splitted_comando[2]
+		string_soldados := splitted_comando[3]
+		int_soldados, _ := strconv.Atoi(string_soldados)
+		cant_soldados := int32(int_soldados)
+		actualizar_soldados_ciudad(nombre_planeta, nombre_ciudad, cant_soldados)
+		reloj = actualizar_reloj(nombre_planeta, num_servidor)
+
+	} else if splitted_comando[0] == "DeleteCity" {
+		log.Println("[DeleteCity]")
+		nombre_planeta := splitted_comando[1]
+		nombre_ciudad := splitted_comando[2]
+		eliminar_ciudad(nombre_planeta, nombre_ciudad)
+		reloj = actualizar_reloj(nombre_planeta, num_servidor)
+	}
 
 	return &pb.AskedServerReply{Reloj: reloj}, nil
 

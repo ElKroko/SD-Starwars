@@ -16,6 +16,7 @@ service StarwarsGame {
 
     rpc AskedServer (AskedServerRequest) returns (AskedServerReply) {}
 
+    rpc GetLogs (GetLogsRequest) returns (GetLogsReply) {}
 }
 
 message GetBrokerRequest{
@@ -64,4 +65,13 @@ message AskedServerRequest {
 
 message AskedServerReply {
     repeated int32 reloj = 1;
+}
+
+message GetLogsRequest {
+    int32 numserver = 1;
+}
+
+message GetLogsReply {
+    string log = 1;
+    int32 servidor = 2;
 }

@@ -95,6 +95,7 @@ func getRandomServer() string {
 	servidor := lista_servidores[numserver]
 	return servidor
 }
+
 func main() {
 	fmt.Println()
 	log.Printf("Bienvenido a Broker Mos Eisley, iniciando servicios...")

@@ -126,6 +126,9 @@ func buscar_ciudad(lista_ciudades []Ciudad, nombre_buscado string) int32 {
 func monolityc_reads(planeta string, reloj_server []int32) bool {
 	var num_servidor int32
 	num_planeta := buscar_Planeta(planeta)
+	if num_planeta == -1 {
+		return true
+	}
 	servidor := planetas[num_planeta].ultimo_servidor
 
 	if servidor == "10.6.43.110" {
@@ -162,8 +165,10 @@ func main() {
 	serviceClient := pb.NewStarwarsGameClient(conn)
 
 	fmt.Println("Bienvenida princesa Leia")
-	fmt.Print("-> ")
+
 	for activo {
+		fmt.Println("")
+		fmt.Print("-> ")
 		fmt.Println("Que desea hacer?")
 		fmt.Println("1) Preguntar el numero de Rebeldes en una ciudad")
 		fmt.Println("2) Cerrar la terminal")
@@ -177,8 +182,8 @@ func main() {
 			if err != nil {
 				panic("No se pudo hacer el GET  " + err.Error())
 			}
-			// cant_soldados = res.GetRebeldes()
-			// reloj = res.GetReloj()
+			cant_soldados = res.GetRebeldes()
+			reloj = res.GetReloj()
 			servidor = res.GetServidor()
 
 			monolityc := monolityc_reads(planeta, reloj)
@@ -191,7 +196,15 @@ func main() {
 				reloj = res.GetReloj()
 				servidor = res.GetServidor()
 			}
-			update_Planeta(planetas[buscar_Planeta(planeta)], reloj, servidor, ciudad, cant_soldados)
+
+			fmt.Println("Cantidad soldados: ", cant_soldados)
+
+			if buscar_Planeta(planeta) == -1 {
+				crear_Planeta(planeta, reloj, servidor, ciudad, cant_soldados)
+			} else {
+				update_Planeta(planetas[buscar_Planeta(planeta)], reloj, servidor, ciudad, cant_soldados)
+			}
+
 		} else if accion == "2" {
 			fmt.Println("Adios")
 			activo = false
