@@ -334,36 +334,37 @@ func obtener_rebeldes(nombre_planeta string, nombre_ciudad string) int32 {
 }
 
 func merge(log_recibido string, num_servidor_log int32) {
-	lineas := strings.Split(log_recibido, "\n")
-	var nombre_planeta string
-	var nombre_ciudad string
-	var nuevo_nombre_ciudad string
-	var accion string
-	var linea string
-	var cant_soldados int32
-	var temp_int int
-	for i := 0; i < len(lineas); i++ {
-		linea = lineas[i]
-		nombre_planeta = strings.Split(linea, " ")[1]
-		nombre_ciudad = strings.Split(linea, " ")[2]
-		accion = strings.Split(linea, " ")[0]
-		if accion == "UpdateNumber" {
-			temp_int, _ = strconv.Atoi(strings.Split(linea, " ")[3])
-			cant_soldados = int32(temp_int)
-			actualizar_soldados_ciudad(nombre_planeta, nombre_ciudad, cant_soldados)
-		} else if accion == "AddCity" {
-			temp_int, _ = strconv.Atoi(strings.Split(linea, " ")[3])
-			cant_soldados = int32(temp_int)
-			crear_ciudad(nombre_planeta, nombre_ciudad, cant_soldados, true)
-		} else if accion == "UpdateName" {
-			nuevo_nombre_ciudad = strings.Split(linea, " ")[3]
-			actualizar_nombre_ciudad(nombre_planeta, nombre_ciudad, nuevo_nombre_ciudad)
-		} else if accion == "DeleteCity" {
-			eliminar_ciudad(nombre_planeta, nombre_ciudad, true)
+	if log_recibido != "" {
+		lineas := strings.Split(log_recibido, "\n")
+		var nombre_planeta string
+		var nombre_ciudad string
+		var nuevo_nombre_ciudad string
+		var accion string
+		var linea string
+		var cant_soldados int32
+		var temp_int int
+		for i := 0; i < len(lineas); i++ {
+			linea = lineas[i]
+			nombre_planeta = strings.Split(linea, " ")[1]
+			nombre_ciudad = strings.Split(linea, " ")[2]
+			accion = strings.Split(linea, " ")[0]
+			if accion == "UpdateNumber" {
+				temp_int, _ = strconv.Atoi(strings.Split(linea, " ")[3])
+				cant_soldados = int32(temp_int)
+				actualizar_soldados_ciudad(nombre_planeta, nombre_ciudad, cant_soldados)
+			} else if accion == "AddCity" {
+				temp_int, _ = strconv.Atoi(strings.Split(linea, " ")[3])
+				cant_soldados = int32(temp_int)
+				crear_ciudad(nombre_planeta, nombre_ciudad, cant_soldados, true)
+			} else if accion == "UpdateName" {
+				nuevo_nombre_ciudad = strings.Split(linea, " ")[3]
+				actualizar_nombre_ciudad(nombre_planeta, nombre_ciudad, nuevo_nombre_ciudad)
+			} else if accion == "DeleteCity" {
+				eliminar_ciudad(nombre_planeta, nombre_ciudad, true)
+			}
+			actualizar_reloj(nombre_planeta, num_servidor_log)
 		}
-		actualizar_reloj(nombre_planeta, num_servidor_log)
 	}
-
 }
 
 func clean_logs() {
@@ -388,7 +389,7 @@ func merge_conexion(IP string) {
 		panic("cannot connect with server " + err.Error())
 	}
 	serviceClient := pb.NewStarwarsGameClient(conn)
-	res, err := serviceClient.GetLogs(context.Background(), &pb.GetLogsRequest{})
+	res, err := serviceClient.GetLogs(context.Background(), &pb.GetLogsRequest{num_servidor})
 	if err != nil {
 		panic("No se pudo hacer conexion de merge  " + err.Error())
 	}
@@ -494,7 +495,7 @@ func actualizar_merge_reloj(data string) {
 //
 
 func (s *server) GetLogs(ctx context.Context, in *pb.GetLogsRequest) (*pb.GetLogsReply, error) {
-	log.Printf("El servidor %s esta mandando un GetLogs", in.GetNumserver())
+	log.Println("El servidor", in.GetNumserver(), " esta mandando un GetLogs")
 
 	log_a_enviar := log_string()
 
