@@ -472,21 +472,31 @@ func actualizar_merge_reloj(data string) {
 	var linea []string
 	var reloj_tmp int
 	var reloj = []int32{0, 0, 0}
+	var reloj_actual = []int32{0, 0, 0}
 	for i := 0; i < len(lineas); i++ {
 		linea = strings.Split(lineas[i], " ")
 		planeta := linea[0]
 		if !existe_planeta(planeta) {
 			crear_planeta(planeta, true)
+			reloj_actual = []int32{0, 0, 0}
+		} else {
+			reloj_actual = planetas[buscar_Planeta(planeta)].reloj
 		}
 		reloj_tmp, _ = strconv.Atoi(strings.Split(linea[1], ",")[0])
 		reloj[0] = int32(reloj_tmp)
-		actualizar_reloj(planeta, 0)
+		for j := reloj_actual[0]; j < reloj[0]; j++ {
+			actualizar_reloj(planeta, 0)
+		}
 		reloj_tmp, _ = strconv.Atoi(strings.Split(linea[1], ",")[1])
 		reloj[1] = int32(reloj_tmp)
-		actualizar_reloj(planeta, 1)
+		for j := reloj_actual[1]; j < reloj[1]; j++ {
+			actualizar_reloj(planeta, 1)
+		}
 		reloj_tmp, _ = strconv.Atoi(strings.Split(linea[1], ",")[2])
 		reloj[2] = int32(reloj_tmp)
-		actualizar_reloj(planeta, 2)
+		for j := reloj_actual[2]; j < reloj[2]; j++ {
+			actualizar_reloj(planeta, 2)
+		}
 	}
 }
 
@@ -528,7 +538,6 @@ func (s *server) GetCantSoldadosServer(ctx context.Context, in *pb.GetServerRequ
 	var reloj = []int32{1, 0, 0}
 
 	return &pb.GetServerReply{Rebeldes: cant_soldados, Reloj: reloj}, nil
-
 }
 
 func (s *server) AskedServer(ctx context.Context, in *pb.AskedServerRequest) (*pb.AskedServerReply, error) {
