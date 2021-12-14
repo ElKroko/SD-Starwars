@@ -518,10 +518,10 @@ func (s *server) PostMerge(ctx context.Context, in *pb.PostMergeRequest) (*pb.Po
 	log.Println("PostMerge!")
 
 	reloj := in.GetReloj()
-	planetas := in.GetPlanetas()
-	log.Println("[PostMerge] Reloj Merge: ", reloj, "\tPlanetas merge: ", planetas)
+	planetas_merge := in.GetPlanetas()
+	log.Println("[PostMerge] Reloj Merge: ", reloj, "\tPlanetas merge: ", planetas_merge)
 
-	actualizar_merge_planetas(planetas)
+	actualizar_merge_planetas(planetas_merge)
 	actualizar_merge_reloj(reloj)
 	clean_logs()
 
