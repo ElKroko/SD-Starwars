@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var lista_servidores = [3]string{"1", "2", "3"}
+var lista_servidores = [3]string{"10.6.43.110", "10.6.43.111", "10.6.43.112"}
 var cant_solicitudes = 0
 
 type server struct {

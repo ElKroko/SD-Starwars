@@ -153,7 +153,7 @@ func read_your_write(planeta string, reloj_server []int32) bool {
 //
 
 func ConectarServidores(comando string) (reloj []int32, servidor string) {
-	conn, err := grpc.Dial("localhost:8080", grpc.WithInsecure()) // Conexion con el Broker
+	conn, err := grpc.Dial("10.6.43.109:8080", grpc.WithInsecure()) // Conexion con el Broker
 	if err != nil {
 		panic("cannot connect with server " + err.Error())
 	}
@@ -164,7 +164,7 @@ func ConectarServidores(comando string) (reloj []int32, servidor string) {
 	servidor_a_conectar := res.GetServidor()
 	log.Println("El Broker me indico conectar con:", servidor_a_conectar)
 
-	conn2, err := grpc.Dial("localhost:8081", grpc.WithInsecure()) // Conexion con el Servidor, cambiar ip por respuesta de servidor
+	conn2, err := grpc.Dial(servidor_a_conectar+":8081", grpc.WithInsecure()) // Conexion con el Servidor, cambiar ip por respuesta de servidor
 	if err != nil {
 		panic("cannot connect with server " + err.Error())
 	}

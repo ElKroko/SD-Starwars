@@ -7,7 +7,7 @@ broker:
 	go run Server/Broker.go
 
 informante:
-	echo "Ejecutando pozo"
+	echo "Ejecutando Informante"
 	go run Informantes/Informantes.go
 
 server:
