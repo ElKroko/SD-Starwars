@@ -419,8 +419,8 @@ func merge_todo(IP1 string, IP2 string) {
 
 	reloj := reloj_string()
 	planetas_merge := planetas_string()
-	log.Panicln("[PreMerge] Planetas merge: ", planetas_merge)
-	log.Panicln("[PreMerge] Reloj merge: ", reloj)
+	log.Println("[PreMerge] Planetas merge: ", planetas_merge)
+	log.Println("[PreMerge] Reloj merge: ", reloj)
 
 	ack1 := postmerge_conexion(IP1, reloj, planetas_merge)
 	ack2 := postmerge_conexion(IP2, reloj, planetas_merge)
