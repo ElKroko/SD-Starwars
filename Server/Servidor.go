@@ -179,8 +179,6 @@ func planetas_string() string {
 			nuevo_texto = nuevo_texto + line
 			if i < len(planetas)-2 {
 				nuevo_texto = nuevo_texto + "\n"
-			} else if i == len(planetas)-1 {
-				nuevo_texto = nuevo_texto
 			}
 		}
 	}
@@ -420,10 +418,12 @@ func merge_todo(IP1 string, IP2 string) {
 	clean_logs()
 
 	reloj := reloj_string()
-	planetas := planetas_string()
+	planetas_merge := planetas_string()
+	log.Panicln("[PreMerge] Planetas merge: ", planetas_merge)
+	log.Panicln("[PreMerge] Reloj merge: ", reloj)
 
-	ack1 := postmerge_conexion(IP1, reloj, planetas)
-	ack2 := postmerge_conexion(IP2, reloj, planetas)
+	ack1 := postmerge_conexion(IP1, reloj, planetas_merge)
+	ack2 := postmerge_conexion(IP2, reloj, planetas_merge)
 
 	if ack1 && ack2 {
 		fmt.Println("Merge realizado")
