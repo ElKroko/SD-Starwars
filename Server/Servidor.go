@@ -420,13 +420,13 @@ func merge_conexion(IP string) {
 	merge(log2, num_servidor_log)
 }
 
-func postmerge_conexion(IP string, reloj string, planetas string) bool {
+func postmerge_conexion(IP string, reloj string, planetas_postmerge string) bool {
 	conn, err := grpc.Dial(IP+":8081", grpc.WithInsecure())
 	if err != nil {
 		panic("cannot connect with server " + err.Error())
 	}
 	serviceClient := pb.NewStarwarsGameClient(conn)
-	res, err := serviceClient.PostMerge(context.Background(), &pb.PostMergeRequest{Reloj: reloj, Planetas: planetas})
+	res, err := serviceClient.PostMerge(context.Background(), &pb.PostMergeRequest{Reloj: reloj, Planetas: planetas_postmerge})
 	if err != nil {
 		panic("No se pudo hacer conexion de merge  " + err.Error())
 	}
