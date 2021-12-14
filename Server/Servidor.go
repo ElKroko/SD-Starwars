@@ -52,12 +52,14 @@ func escribir_archivo(nombre_archivo string, texto string) {
 	defer f.Close()
 
 	if fi.Size() == 0 {
-		if _, err = f.WriteString(texto); err != nil {
-			panic(err)
+		_, err2 := f.WriteString(texto)
+		if err2 != nil {
+			panic(err2)
 		}
 	} else {
-		if _, err = f.WriteString("\n" + texto); err != nil {
-			panic(err)
+		_, err2 := f.WriteString("\n" + texto)
+		if err2 != nil {
+			panic(err2)
 		}
 	}
 
