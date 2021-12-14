@@ -389,7 +389,7 @@ func merge_conexion(IP string) {
 		panic("cannot connect with server " + err.Error())
 	}
 	serviceClient := pb.NewStarwarsGameClient(conn)
-	res, err := serviceClient.GetLogs(context.Background(), &pb.GetLogsRequest{num_servidor})
+	res, err := serviceClient.GetLogs(context.Background(), &pb.GetLogsRequest{Numserver: num_servidor})
 	if err != nil {
 		panic("No se pudo hacer conexion de merge  " + err.Error())
 	}
