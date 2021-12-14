@@ -482,6 +482,7 @@ func actualizar_merge_planetas(data string) {
 			info_planeta = info_planeta + lineas[i]
 		}
 	}
+	log.Println("\nMERGE PLANETA: " + planeta + "INFO PLANETA: " + info_planeta + "\n")
 	if planeta_actual == "" {
 		if existe_planeta(planeta_actual) {
 			escribir_archivo(planeta_actual, info_planeta)
