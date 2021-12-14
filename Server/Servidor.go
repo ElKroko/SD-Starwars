@@ -514,6 +514,7 @@ func (s *server) PostMerge(ctx context.Context, in *pb.PostMergeRequest) (*pb.Po
 	actualizar_merge_planetas(planetas)
 	actualizar_merge_reloj(reloj)
 	clean_logs()
+	fmt.Println(planetas)
 
 	return &pb.PostMergeReply{Ack: true}, nil
 }
