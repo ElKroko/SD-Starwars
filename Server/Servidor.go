@@ -40,7 +40,29 @@ func buscar_Planeta(nombre_buscado string) int32 {
 	return -1
 }
 
+// funcion nueva
 func escribir_archivo(nombre_archivo string, texto string) {
+	f, err := os.OpenFile("archivos/"+nombre_archivo+".txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	datawriter := bufio.NewWriter(f)
+
+	fstat, _ := f.Stat()
+
+	if fstat.Size() == 0 {
+		_, _ = datawriter.WriteString(texto)
+	} else {
+		_, _ = datawriter.WriteString("\n" + texto)
+	}
+
+	datawriter.Flush()
+	f.Close()
+
+}
+
+func escribir_archivo2(nombre_archivo string, texto string) {
 
 	f, err := os.OpenFile("archivos/"+nombre_archivo+".txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -393,6 +415,7 @@ func merge_conexion(IP string) {
 		panic("No se pudo hacer conexion de merge  " + err.Error())
 	}
 	log2 := res.GetLog()
+	log.Print("[Log recibido]: " + log2)
 	num_servidor_log := res.GetServidor()
 	merge(log2, num_servidor_log)
 }
@@ -509,6 +532,7 @@ func (s *server) GetLogs(ctx context.Context, in *pb.GetLogsRequest) (*pb.GetLog
 	log.Println("El servidor", in.GetNumserver(), " esta mandando un GetLogs")
 
 	log_a_enviar := log_string()
+	log.Println("[Log a enviar]: " + log_a_enviar)
 
 	// Revisar que enviar de servidor, si su IP o el numero  que lo identifica
 
