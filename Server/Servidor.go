@@ -150,8 +150,6 @@ func reloj_string() string {
 		nuevo_texto = nuevo_texto + nombre_planeta + " " + reloj
 		if i < len(planetas)-2 {
 			nuevo_texto = nuevo_texto + "\n"
-		} else if i == len(planetas)-1 {
-			nuevo_texto = nuevo_texto
 		}
 	}
 	return nuevo_texto
@@ -345,9 +343,10 @@ func merge(log_recibido string, num_servidor_log int32) {
 		var temp_int int
 		for i := 0; i < len(lineas); i++ {
 			linea = lineas[i]
+			accion = strings.Split(linea, " ")[0]
 			nombre_planeta = strings.Split(linea, " ")[1]
 			nombre_ciudad = strings.Split(linea, " ")[2]
-			accion = strings.Split(linea, " ")[0]
+
 			if accion == "UpdateNumber" {
 				temp_int, _ = strconv.Atoi(strings.Split(linea, " ")[3])
 				cant_soldados = int32(temp_int)
@@ -355,12 +354,12 @@ func merge(log_recibido string, num_servidor_log int32) {
 			} else if accion == "AddCity" {
 				temp_int, _ = strconv.Atoi(strings.Split(linea, " ")[3])
 				cant_soldados = int32(temp_int)
-				crear_ciudad(nombre_planeta, nombre_ciudad, cant_soldados, true)
+				crear_ciudad(nombre_planeta, nombre_ciudad, cant_soldados, false)
 			} else if accion == "UpdateName" {
 				nuevo_nombre_ciudad = strings.Split(linea, " ")[3]
 				actualizar_nombre_ciudad(nombre_planeta, nombre_ciudad, nuevo_nombre_ciudad)
 			} else if accion == "DeleteCity" {
-				eliminar_ciudad(nombre_planeta, nombre_ciudad, true)
+				eliminar_ciudad(nombre_planeta, nombre_ciudad, false)
 			}
 			actualizar_reloj(nombre_planeta, num_servidor_log)
 		}
@@ -448,7 +447,7 @@ func actualizar_merge_planetas(data string) {
 			if existe_planeta(planeta_actual) {
 				escribir_archivo(planeta_actual, info_planeta)
 			} else {
-				crear_planeta(planeta_actual, true)
+				crear_planeta(planeta_actual, false)
 				escribir_archivo(planeta_actual, info_planeta)
 			}
 			info_planeta = ""
@@ -462,7 +461,7 @@ func actualizar_merge_planetas(data string) {
 	if existe_planeta(planeta_actual) {
 		escribir_archivo(planeta_actual, info_planeta)
 	} else {
-		crear_planeta(planeta_actual, true)
+		crear_planeta(planeta_actual, false)
 		escribir_archivo(planeta_actual, info_planeta)
 	}
 }
@@ -520,6 +519,7 @@ func (s *server) PostMerge(ctx context.Context, in *pb.PostMergeRequest) (*pb.Po
 
 	reloj := in.GetReloj()
 	planetas := in.GetPlanetas()
+	log.Println("[PostMerge] Reloj Merge: ", reloj, "\tPlanetas merge: ", planetas)
 
 	actualizar_merge_planetas(planetas)
 	actualizar_merge_reloj(reloj)
