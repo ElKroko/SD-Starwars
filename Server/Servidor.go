@@ -471,7 +471,7 @@ func actualizar_merge_planetas(data string) {
 			if existe_planeta(planeta_actual) {
 				escribir_archivo(planeta_actual, info_planeta)
 			} else {
-				crear_planeta(planeta_actual, false)
+				crear_planeta(planeta_actual, true)
 				escribir_archivo(planeta_actual, info_planeta)
 			}
 			info_planeta = ""
@@ -486,7 +486,7 @@ func actualizar_merge_planetas(data string) {
 		if existe_planeta(planeta_actual) {
 			escribir_archivo(planeta_actual, info_planeta)
 		} else {
-			crear_planeta(planeta_actual, false)
+			crear_planeta(planeta_actual, true)
 			escribir_archivo(planeta_actual, info_planeta)
 		}
 	}
