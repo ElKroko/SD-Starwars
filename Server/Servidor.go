@@ -92,10 +92,8 @@ func log_string() string {
 		for scanner.Scan() {
 			line = scanner.Text()
 			nuevo_texto = nuevo_texto + line
-			if i < len(planetas)-2 {
+			if i < len(planetas)-1 {
 				nuevo_texto = nuevo_texto + "\n"
-			} else if i == len(planetas)-1 {
-				nuevo_texto = nuevo_texto
 			}
 		}
 	}
@@ -151,7 +149,7 @@ func reloj_string() string {
 		reloj = strconv.Itoa(int(planeta.reloj[0])) + "," + strconv.Itoa(int(planeta.reloj[1])) + "," + strconv.Itoa(int(planeta.reloj[2]))
 
 		nuevo_texto = nuevo_texto + nombre_planeta + " " + reloj
-		if i < len(planetas)-2 {
+		if i < len(planetas)-1 {
 			nuevo_texto = nuevo_texto + "\n"
 		}
 	}
@@ -180,7 +178,7 @@ func planetas_string() string {
 		for scanner.Scan() {
 			line = scanner.Text()
 			nuevo_texto = nuevo_texto + line
-			if i < len(planetas)-2 {
+			if i < len(planetas)-1 {
 				nuevo_texto = nuevo_texto + "\n"
 			}
 		}
