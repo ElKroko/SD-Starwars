@@ -514,7 +514,6 @@ func (s *server) PostMerge(ctx context.Context, in *pb.PostMergeRequest) (*pb.Po
 	actualizar_merge_planetas(planetas)
 	actualizar_merge_reloj(reloj)
 	clean_logs()
-	fmt.Println(planetas)
 
 	return &pb.PostMergeReply{Ack: true}, nil
 }
@@ -642,10 +641,13 @@ func main() {
 			time.Sleep(30 * time.Second) //cambiar esto!!!!!!****!*!*!*!*!*!
 			merge_todo("10.6.43.111", "10.6.43.112")
 			fmt.Println("Merge Realizado")
+			fmt.Println(planetas)
+			fmt.Println("")
 		}
 	} else if num_servidor == 1 || num_servidor == 2 {
 		for flag_opcion {
 			fmt.Println("Esperando 10 segundos...")
+			fmt.Println(planetas)
 			time.Sleep(10 * time.Second)
 		}
 	} else {
