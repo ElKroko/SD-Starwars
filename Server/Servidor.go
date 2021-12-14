@@ -51,6 +51,7 @@ func escribir_archivo(nombre_archivo string, texto string) {
 
 	defer f.Close()
 
+	log.Println("[Escribir archivo] nombre: " + nombre_archivo + " [Texto a escribir]: " + texto)
 	if fi.Size() == 0 {
 		_, err2 := f.WriteString(texto)
 		if err2 != nil {
@@ -231,6 +232,7 @@ func crear_ciudad(nombre_planeta string, nombre_ciudad string, cant_soldados int
 		}
 
 	} else {
+		log.Println("Crear ciudad: " + nombre_planeta)
 		crear_planeta(nombre_planeta, true)
 		escribir_archivo(nombre_planeta, nombre_planeta+" "+nombre_ciudad+" "+fmt.Sprint(cant_soldados))
 		if logear {
@@ -613,7 +615,7 @@ func GetIP() string {
 
 func main() {
 	fmt.Println()
-	log.Printf("Bienvenido al Servidor Fulcrum, iniciando servicios...")
+
 	rand.Seed(time.Now().UnixNano())
 
 	go func() {
@@ -636,10 +638,13 @@ func main() {
 	}
 	ip := GetIP()
 	if ip == "10.6.43.110" {
+		log.Printf("Bienvenido al Fulcrum Dominante, iniciando servicios...")
 		num_servidor = 0
 	} else if ip == "10.6.43.111" {
+		log.Printf("Bienvenido al Servidor Fulcrum, iniciando servicios...")
 		num_servidor = 1
 	} else if ip == "10.6.43.112" {
+		log.Printf("Bienvenido al Servidor Fulcrum, iniciando servicios...")
 		num_servidor = 2
 	}
 

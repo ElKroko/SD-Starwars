@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc"
 	pb "lab3/proto"
 	"log"
+	"net"
 	"strconv"
 	"strings"
-
-	"google.golang.org/grpc"
 )
 
 //
@@ -247,6 +247,22 @@ func ConectarServidores(comando string) (reloj []int32, servidor string) {
 
 }
 
+func GetIP() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return ""
+	}
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				fmt.Println(ipnet.IP.To4())
+				return ipnet.IP.String()
+			}
+		}
+	}
+	return ""
+}
+
 //
 //		Main Game
 //
@@ -262,7 +278,15 @@ func main() {
 
 	var comando string
 
-	fmt.Println("Bienvenida Informante")
+	ip := GetIP()
+	if ip == "10.6.43.111" {
+		log.Println("Bienvenida Ashoka Tano, iniciando servicios...")
+	} else if ip == "10.6.43.112" {
+		log.Println("Bienvenido Almirante Thrawn, iniciando servicios...")
+	} else {
+		log.Panicln("Por favor, ejecuta este archivo en las maquinas dist@123 o dist@124")
+	}
+
 	fmt.Print("-> ")
 	for activo {
 		fmt.Println("¿Que desea hacer?")

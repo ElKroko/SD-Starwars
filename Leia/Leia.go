@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	pb "lab3/proto"
+	"log"
+	"net"
 
 	"google.golang.org/grpc"
 )
@@ -144,6 +146,22 @@ func monolityc_reads(planeta string, reloj_server []int32) bool {
 	return true
 }
 
+func GetIP() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return ""
+	}
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				fmt.Println(ipnet.IP.To4())
+				return ipnet.IP.String()
+			}
+		}
+	}
+	return ""
+}
+
 //
 //		Main Game
 //
@@ -157,6 +175,13 @@ func main() {
 	var cant_soldados int32
 	var reloj []int32
 	var servidor string
+
+	ip := GetIP()
+	if ip == "10.6.43.110" {
+		log.Println("Bienvenida Leia Organa, iniciando servicios...")
+	} else {
+		log.Panicln("Por favor, ejecuta este archivo en la maquina dist@122")
+	}
 
 	conn, err := grpc.Dial("10.6.43.109:8080", grpc.WithInsecure()) // Conectamos al IP de 10.6.43.109:8080, el lider.
 	if err != nil {
