@@ -27,7 +27,7 @@ type Planeta struct {
 
 var planetas []Planeta
 
-var num_servidor int32 = 0 // Cambiar 0, 1 o 2 segun el servidor a ejecutar.
+var num_servidor int32 = -1 // Cambiar 0, 1 o 2 segun el servidor a ejecutar.
 
 func buscar_Planeta(nombre_buscado string) int32 {
 	var planeta Planeta
@@ -47,10 +47,18 @@ func escribir_archivo(nombre_archivo string, texto string) {
 		panic(err)
 	}
 
+	fi, _ := f.Stat()
+
 	defer f.Close()
 
-	if _, err = f.WriteString(texto + "\n"); err != nil {
-		panic(err)
+	if fi.Size() == 0 {
+		if _, err = f.WriteString(texto); err != nil {
+			panic(err)
+		}
+	} else {
+		if _, err = f.WriteString("\n" + texto); err != nil {
+			panic(err)
+		}
 	}
 
 }
@@ -81,8 +89,10 @@ func log_string() string {
 		for scanner.Scan() {
 			line = scanner.Text()
 			nuevo_texto = nuevo_texto + line
-			if i < len(planetas)-1 {
+			if i < len(planetas)-2 {
 				nuevo_texto = nuevo_texto + "\n"
+			} else if i == len(planetas)-1 {
+				nuevo_texto = nuevo_texto
 			}
 		}
 	}
@@ -144,6 +154,39 @@ func reloj_string() string {
 			nuevo_texto = nuevo_texto
 		}
 	}
+	return nuevo_texto
+}
+
+func planetas_string() string {
+	var nombre_planeta string
+	var planeta Planeta
+	nuevo_texto := ""
+	for i := 0; i < len(planetas); i++ {
+		planeta = planetas[i]
+		nombre_planeta = planeta.nombre_planeta
+
+		f, err := os.Open("archivos/" + nombre_planeta + ".txt")
+		if err != nil {
+			return ""
+		}
+		defer f.Close()
+
+		// Splits on newlines by default.
+		scanner := bufio.NewScanner(f)
+
+		line := ""
+
+		for scanner.Scan() {
+			line = scanner.Text()
+			nuevo_texto = nuevo_texto + line
+			if i < len(planetas)-2 {
+				nuevo_texto = nuevo_texto + "\n"
+			} else if i == len(planetas)-1 {
+				nuevo_texto = nuevo_texto
+			}
+		}
+	}
+
 	return nuevo_texto
 }
 
@@ -248,7 +291,11 @@ func eliminar_ciudad(nombre_planeta string, nombre_ciudad string, logear bool) {
 				if strings.Contains(scanner.Text(), nombre_ciudad) {
 
 				} else {
-					nuevo_texto = nuevo_texto + scanner.Text() + "\n"
+					if nuevo_texto == "" {
+						nuevo_texto = scanner.Text()
+					} else {
+						nuevo_texto = nuevo_texto + "\n" + scanner.Text()
+					}
 				}
 			}
 			e := os.Remove("archivos/" + nombre_planeta + ".txt")
@@ -335,8 +382,8 @@ func clean_logs() {
 	}
 }
 
-func merge_todo() {
-	conn, err := grpc.Dial("localhost:8081", grpc.WithInsecure()) // Conectamos al IP de 10.6.43.109:8080, el lider.
+func merge_conexion(IP string) {
+	conn, err := grpc.Dial(IP+":8081", grpc.WithInsecure())
 	if err != nil {
 		panic("cannot connect with server " + err.Error())
 	}
@@ -348,21 +395,45 @@ func merge_todo() {
 	log2 := res.GetLog()
 	num_servidor_log := res.GetServidor()
 	merge(log2, num_servidor_log)
-	res2, err2 := serviceClient.GetLogs(context.Background(), &pb.GetLogsRequest{})
-	if err2 != nil {
-		panic("No se pudo hacer conexion de merge  " + err.Error())
-	}
-	log3 := res2.GetLog()
-	num_servidor_log = res.GetServidor()
-	merge(log3, num_servidor_log)
-	// res, err := serviceClient.PostReloj(context.Background(), &pb.PostReloj{})
-	// if err != nil {
-	// 	panic("No se pudo hacer conexion de merge  " + err.Error())
-	// }
-	fmt.Println("Merge realizado")
 }
 
-func actualizar_merge_archivos(data string) {
+func postmerge_conexion(IP string, reloj string, planetas string) bool {
+	conn, err := grpc.Dial(IP+":8081", grpc.WithInsecure())
+	if err != nil {
+		panic("cannot connect with server " + err.Error())
+	}
+	serviceClient := pb.NewStarwarsGameClient(conn)
+	res, err := serviceClient.PostMerge(context.Background(), &pb.PostMergeRequest{Reloj: reloj, Planetas: planetas})
+	if err != nil {
+		panic("No se pudo hacer conexion de merge  " + err.Error())
+	}
+	ack := res.GetAck()
+	return ack
+}
+
+// Esta funcion es llamada x el dominatrix
+func merge_todo(IP1 string, IP2 string) {
+
+	merge_conexion(IP1)
+	merge_conexion(IP2)
+
+	clean_logs()
+
+	reloj := reloj_string()
+	planetas := planetas_string()
+
+	ack1 := postmerge_conexion(IP1, reloj, planetas)
+	ack2 := postmerge_conexion(IP2, reloj, planetas)
+
+	if ack1 && ack2 {
+		fmt.Println("Merge realizado")
+	} else {
+		fmt.Println("Merge fallido :cccccccc")
+	}
+
+}
+
+func actualizar_merge_planetas(data string) {
 	lineas := strings.Split(data, "\n")
 	var linea []string
 	var planeta string
@@ -376,17 +447,21 @@ func actualizar_merge_archivos(data string) {
 			if existe_planeta(planeta_actual) {
 				escribir_archivo(planeta_actual, info_planeta)
 			} else {
-				crear_planeta(planeta_actual, false)
+				crear_planeta(planeta_actual, true)
 				escribir_archivo(planeta_actual, info_planeta)
 			}
 			info_planeta = ""
 		}
-		info_planeta = info_planeta + lineas[i] + "\n"
+		if i < len(lineas)-1 {
+			info_planeta = info_planeta + lineas[i] + "\n"
+		} else {
+			info_planeta = info_planeta + lineas[i]
+		}
 	}
 	if existe_planeta(planeta_actual) {
 		escribir_archivo(planeta_actual, info_planeta)
 	} else {
-		crear_planeta(planeta_actual, false)
+		crear_planeta(planeta_actual, true)
 		escribir_archivo(planeta_actual, info_planeta)
 	}
 }
@@ -399,6 +474,9 @@ func actualizar_merge_reloj(data string) {
 	for i := 0; i < len(lineas); i++ {
 		linea = strings.Split(lineas[i], " ")
 		planeta := linea[0]
+		if !existe_planeta(planeta) {
+			crear_planeta(planeta, true)
+		}
 		reloj_tmp, _ = strconv.Atoi(strings.Split(linea[1], ",")[0])
 		reloj[0] = int32(reloj_tmp)
 		actualizar_reloj(planeta, 0)
@@ -416,9 +494,27 @@ func actualizar_merge_reloj(data string) {
 //
 
 func (s *server) GetLogs(ctx context.Context, in *pb.GetLogsRequest) (*pb.GetLogsReply, error) {
-	log.Println("Recibi GetLogs de: ", in.GetNumserver())
-	log_string := log_string()
-	return &pb.GetLogsReply{Log: log_string, Servidor: num_servidor}, nil
+	log.Printf("El servidor %s esta mandando un GetLogs", in.GetNumserver())
+
+	log_a_enviar := log_string()
+
+	// Revisar que enviar de servidor, si su IP o el numero  que lo identifica
+
+	return &pb.GetLogsReply{Log: log_a_enviar, Servidor: num_servidor}, nil
+}
+
+func (s *server) PostMerge(ctx context.Context, in *pb.PostMergeRequest) (*pb.PostMergeReply, error) {
+
+	log.Println("PostMerge!")
+
+	reloj := in.GetReloj()
+	planetas := in.GetPlanetas()
+
+	actualizar_merge_planetas(planetas)
+	actualizar_merge_reloj(reloj)
+	clean_logs()
+
+	return &pb.PostMergeReply{Ack: true}, nil
 }
 
 func (s *server) GetCantSoldadosServer(ctx context.Context, in *pb.GetServerRequest) (*pb.GetServerReply, error) {
@@ -487,6 +583,22 @@ func (s *server) AskedServer(ctx context.Context, in *pb.AskedServerRequest) (*p
 
 }
 
+func GetIP() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return ""
+	}
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				fmt.Println(ipnet.IP.To4())
+				return ipnet.IP.String()
+			}
+		}
+	}
+	return ""
+}
+
 func main() {
 	fmt.Println()
 	log.Printf("Bienvenido al Servidor Fulcrum, iniciando servicios...")
@@ -510,23 +622,26 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var opcion string
-	fmt.Println("Eres el servidor dominante?")
-	fmt.Println("\t [1] Si")
-	fmt.Println("\t [2] No")
-	fmt.Scanln(&opcion)
+	ip := GetIP()
+	if ip == "10.6.43.110" {
+		num_servidor = 0
+	} else if ip == "10.6.43.111" {
+		num_servidor = 1
+	} else if ip == "10.6.43.112" {
+		num_servidor = 2
+	}
 
 	log.Print("Servicios iniciados, escuchando red...")
 
 	flag_opcion := true
-	if opcion == "1" {
+	if num_servidor == 0 {
 		for flag_opcion {
 			fmt.Println("En 2 minutos se hara un merge")
-			time.Sleep(10 * time.Second) //cambiar esto!!!!!!****!*!*!*!*!*!
-			//merge_todo()
+			time.Sleep(30 * time.Second) //cambiar esto!!!!!!****!*!*!*!*!*!
+			merge_todo("10.6.43.111", "10.6.43.112")
 			fmt.Println("Merge Realizado")
 		}
-	} else if opcion == "2" {
+	} else if num_servidor == 1 || num_servidor == 2 {
 		for flag_opcion {
 			fmt.Println("Esperando 10 segundos...")
 			time.Sleep(10 * time.Second)

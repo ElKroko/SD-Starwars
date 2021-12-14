@@ -16,7 +16,11 @@ service StarwarsGame {
 
     rpc AskedServer (AskedServerRequest) returns (AskedServerReply) {}
 
+    // Funciones para Servers
+
     rpc GetLogs (GetLogsRequest) returns (GetLogsReply) {}
+
+    rpc PostMerge (PostMergeRequest) returns (PostMergeReply) {}
 }
 
 message GetBrokerRequest{
@@ -74,4 +78,13 @@ message GetLogsRequest {
 message GetLogsReply {
     string log = 1;
     int32 servidor = 2;
+}
+
+message PostMergeRequest {
+    string reloj = 1;
+    string planetas = 2;
+}
+
+message PostMergeReply {
+    bool ack = 1;
 }

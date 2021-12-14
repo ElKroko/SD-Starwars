@@ -1,2 +1,0 @@
-Jugador_0 Ronda_1 localhost
-Jugador_1 Ronda_1 localhost

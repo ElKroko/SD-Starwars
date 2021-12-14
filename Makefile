@@ -12,5 +12,5 @@ informante:
 
 server:
 	echo "Ejecutando Servidor"
-	go run Server/servidores.go
+	go run Server/Servidor.go
 	

@@ -26,6 +26,7 @@ type StarwarsGameClient interface {
 	AskForServers(ctx context.Context, in *AskForServersRequest, opts ...grpc.CallOption) (*AskForServersReply, error)
 	AskedServer(ctx context.Context, in *AskedServerRequest, opts ...grpc.CallOption) (*AskedServerReply, error)
 	GetLogs(ctx context.Context, in *GetLogsRequest, opts ...grpc.CallOption) (*GetLogsReply, error)
+	PostMerge(ctx context.Context, in *PostMergeRequest, opts ...grpc.CallOption) (*PostMergeReply, error)
 }
 
 type starwarsGameClient struct {
@@ -90,6 +91,15 @@ func (c *starwarsGameClient) GetLogs(ctx context.Context, in *GetLogsRequest, op
 	return out, nil
 }
 
+func (c *starwarsGameClient) PostMerge(ctx context.Context, in *PostMergeRequest, opts ...grpc.CallOption) (*PostMergeReply, error) {
+	out := new(PostMergeReply)
+	err := c.cc.Invoke(ctx, "/proto.StarwarsGame/PostMerge", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StarwarsGameServer is the server API for StarwarsGame service.
 // All implementations must embed UnimplementedStarwarsGameServer
 // for forward compatibility
@@ -102,6 +112,7 @@ type StarwarsGameServer interface {
 	AskForServers(context.Context, *AskForServersRequest) (*AskForServersReply, error)
 	AskedServer(context.Context, *AskedServerRequest) (*AskedServerReply, error)
 	GetLogs(context.Context, *GetLogsRequest) (*GetLogsReply, error)
+	PostMerge(context.Context, *PostMergeRequest) (*PostMergeReply, error)
 	mustEmbedUnimplementedStarwarsGameServer()
 }
 
@@ -126,6 +137,9 @@ func (UnimplementedStarwarsGameServer) AskedServer(context.Context, *AskedServer
 }
 func (UnimplementedStarwarsGameServer) GetLogs(context.Context, *GetLogsRequest) (*GetLogsReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLogs not implemented")
+}
+func (UnimplementedStarwarsGameServer) PostMerge(context.Context, *PostMergeRequest) (*PostMergeReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostMerge not implemented")
 }
 func (UnimplementedStarwarsGameServer) mustEmbedUnimplementedStarwarsGameServer() {}
 
@@ -248,6 +262,24 @@ func _StarwarsGame_GetLogs_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StarwarsGame_PostMerge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PostMergeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StarwarsGameServer).PostMerge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.StarwarsGame/PostMerge",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StarwarsGameServer).PostMerge(ctx, req.(*PostMergeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StarwarsGame_ServiceDesc is the grpc.ServiceDesc for StarwarsGame service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -278,6 +310,10 @@ var StarwarsGame_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLogs",
 			Handler:    _StarwarsGame_GetLogs_Handler,
+		},
+		{
+			MethodName: "PostMerge",
+			Handler:    _StarwarsGame_PostMerge_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
