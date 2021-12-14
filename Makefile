@@ -6,14 +6,11 @@ broker:
 	echo "Ejecutando Broker"
 	go run Server/Broker.go
 
-pozo:
+informante:
 	echo "Ejecutando pozo"
-	go run server/Pozo.go
+	go run Informantes/Informantes.go
 
-datanode:
-	echo "Ejecutando datanode"
-	go run server/DataNode.go
+server:
+	echo "Ejecutando Servidor"
+	go run Server/servidores.go
 	
-jugador:
-	echo "Ejecutando jugadores"
-	go run client/Jugador.go

@@ -241,9 +241,9 @@ func ConectarServidores(comando string) (reloj []int32, servidor string) {
 
 	// aqui
 
-	log.Println("El servidor me envio el reloj ", reloj)
+	log.Println("El servidor me envio el reloj ", ultimo_reloj)
 
-	return reloj, servidor_a_conectar
+	return ultimo_reloj, servidor_a_conectar
 
 }
 

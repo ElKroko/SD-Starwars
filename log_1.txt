@@ -1,6 +1,0 @@
-AddCity 1 a 1
-AddCity 1 a 100
-AddCity 1 Maximiliano 0
-AddCity 1 b 10
-AddCity 1 hola 0
-AddCity 1 b 100

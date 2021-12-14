@@ -27,7 +27,7 @@ type Planeta struct {
 
 var planetas []Planeta
 
-var num_servidor int32 = 1 // Cambiar 1, 2 o 3 segun el servidor a ejecutar.
+var num_servidor int32 = 0 // Cambiar 0, 1 o 2 segun el servidor a ejecutar.
 
 func buscar_Planeta(nombre_buscado string) int32 {
 	var planeta Planeta
@@ -42,7 +42,7 @@ func buscar_Planeta(nombre_buscado string) int32 {
 
 func escribir_archivo(nombre_archivo string, texto string) {
 
-	f, err := os.OpenFile(nombre_archivo+".txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile("archivos/"+nombre_archivo+".txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
@@ -55,8 +55,8 @@ func escribir_archivo(nombre_archivo string, texto string) {
 
 }
 
-func add_log(nombre_planeta string, nombre_ciudad string, cant_soldados int32, nombre_accion string) {
-	escribir_archivo("log_"+nombre_planeta, nombre_accion+" "+nombre_planeta+" "+nombre_ciudad+" "+fmt.Sprint(cant_soldados))
+func add_log(nombre_planeta string, nombre_ciudad string, dato_extra string, nombre_accion string) {
+	escribir_archivo("log_"+nombre_planeta, nombre_accion+" "+nombre_planeta+" "+nombre_ciudad+" "+dato_extra)
 }
 
 func log_string() string {
@@ -67,7 +67,7 @@ func log_string() string {
 		planeta = planetas[i]
 		nombre_planeta = planeta.nombre_planeta
 
-		f, err := os.Open("log_" + nombre_planeta + ".txt")
+		f, err := os.Open("archivos/" + "log_" + nombre_planeta + ".txt")
 		if err != nil {
 			return ""
 		}
@@ -90,18 +90,20 @@ func log_string() string {
 	return nuevo_texto
 }
 
-func crear_planeta(nombre_planeta string) {
+func crear_planeta(nombre_planeta string, logear bool) {
 
-	_, err := os.Create(nombre_planeta + ".txt")
+	_, err := os.Create("archivos/" + nombre_planeta + ".txt")
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err2 := os.Create("log_" + nombre_planeta)
+	if logear {
+		_, err2 := os.Create("archivos/" + "log_" + nombre_planeta + ".txt")
 
-	if err2 != nil {
-		log.Fatal(err2)
+		if err2 != nil {
+			log.Fatal(err2)
+		}
 	}
 	var nuevo_planeta Planeta
 
@@ -121,7 +123,7 @@ func actualizar_reloj(nombre_planeta string, num_servidor int32) []int32 {
 	return []int32{-1, -1, -1}
 }
 
-func obtener_reloj(nombre_planeta string) {
+func obtener_reloj(nombre_planeta string) []int32 {
 	return planetas[buscar_Planeta(nombre_planeta)].reloj
 }
 
@@ -136,16 +138,17 @@ func reloj_string() string {
 		reloj = strconv.Itoa(int(planeta.reloj[0])) + "," + strconv.Itoa(int(planeta.reloj[1])) + "," + strconv.Itoa(int(planeta.reloj[2]))
 
 		nuevo_texto = nuevo_texto + nombre_planeta + " " + reloj
-		if i < len(planetas)-1 {
+		if i < len(planetas)-2 {
 			nuevo_texto = nuevo_texto + "\n"
+		} else if i == len(planetas)-1 {
+			nuevo_texto = nuevo_texto
 		}
 	}
-
 	return nuevo_texto
 }
 
 func existe_ciudad(nombre_planeta string, nombre_ciudad string) bool {
-	f, err := os.Open(nombre_planeta + ".txt")
+	f, err := os.Open("archivos/" + nombre_planeta + ".txt")
 	if err != nil {
 		return false
 	}
@@ -168,27 +171,30 @@ func existe_ciudad(nombre_planeta string, nombre_ciudad string) bool {
 }
 
 func existe_planeta(nombre_planeta string) bool {
-	if _, err := os.Stat(nombre_planeta + ".txt"); err == nil {
+	if _, err := os.Stat("archivos/" + nombre_planeta + ".txt"); err == nil {
 		return true
 	}
 	return false
 }
 
-func crear_ciudad(nombre_planeta string, nombre_ciudad string, cant_soldados int32) {
+func crear_ciudad(nombre_planeta string, nombre_ciudad string, cant_soldados int32, logear bool) {
 
 	if existe_planeta(nombre_planeta) {
 		if existe_ciudad(nombre_planeta, nombre_ciudad) {
 			actualizar_soldados_ciudad(nombre_planeta, nombre_ciudad, cant_soldados)
-			add_log(nombre_planeta, nombre_ciudad, cant_soldados, "UpdateNumber")
 		} else {
 			escribir_archivo(nombre_planeta, nombre_planeta+" "+nombre_ciudad+" "+fmt.Sprint(cant_soldados))
-			add_log(nombre_planeta, nombre_ciudad, cant_soldados, "AddCity")
+			if logear {
+				add_log(nombre_planeta, nombre_ciudad, fmt.Sprint(cant_soldados), "AddCity")
+			}
 		}
 
 	} else {
-		crear_planeta(nombre_planeta)
+		crear_planeta(nombre_planeta, true)
 		escribir_archivo(nombre_planeta, nombre_planeta+" "+nombre_ciudad+" "+fmt.Sprint(cant_soldados))
-		add_log(nombre_planeta, nombre_ciudad, cant_soldados, "AddCity")
+		if logear {
+			add_log(nombre_planeta, nombre_ciudad, fmt.Sprint(cant_soldados), "AddCity")
+		}
 	}
 }
 
@@ -196,12 +202,14 @@ func actualizar_nombre_ciudad(nombre_planeta string, nombre_ciudad string, nuevo
 
 	if existe_planeta(nombre_planeta) {
 		if existe_ciudad(nombre_planeta, nombre_ciudad) {
-			eliminar_ciudad(nombre_planeta, nombre_ciudad)
+			eliminar_ciudad(nombre_planeta, nombre_ciudad, false)
 		}
-		crear_ciudad(nombre_planeta, nuevo_nombre_ciudad, 0)
+		crear_ciudad(nombre_planeta, nuevo_nombre_ciudad, 0, false)
+		add_log(nombre_planeta, nombre_ciudad, nuevo_nombre_ciudad, "UpdateName")
 	} else {
-		crear_planeta(nombre_planeta)
-		crear_ciudad(nombre_planeta, nuevo_nombre_ciudad, 0)
+		crear_planeta(nombre_planeta, true)
+		crear_ciudad(nombre_planeta, nuevo_nombre_ciudad, 0, false)
+		add_log(nombre_planeta, nombre_ciudad, nuevo_nombre_ciudad, "AddCity")
 	}
 
 }
@@ -210,22 +218,26 @@ func actualizar_soldados_ciudad(nombre_planeta string, nombre_ciudad string, can
 
 	if existe_planeta(nombre_planeta) {
 		if existe_ciudad(nombre_planeta, nombre_ciudad) {
-			eliminar_ciudad(nombre_planeta, nombre_ciudad)
+			eliminar_ciudad(nombre_planeta, nombre_ciudad, false)
 		}
-		crear_ciudad(nombre_planeta, nombre_ciudad, cant_soldados)
+		crear_ciudad(nombre_planeta, nombre_ciudad, cant_soldados, false)
+
+		add_log(nombre_planeta, nombre_ciudad, fmt.Sprint(cant_soldados), "UpdateNumber")
 
 	} else {
-		crear_planeta(nombre_planeta)
-		crear_ciudad(nombre_planeta, nombre_ciudad, cant_soldados)
+		crear_planeta(nombre_planeta, true)
+		crear_ciudad(nombre_planeta, nombre_ciudad, cant_soldados, false)
+		add_log(nombre_planeta, nombre_ciudad, fmt.Sprint(cant_soldados), "AddCity")
+
 	}
 
 }
 
-func eliminar_ciudad(nombre_planeta string, nombre_ciudad string) {
+func eliminar_ciudad(nombre_planeta string, nombre_ciudad string, logear bool) {
 
 	if existe_planeta(nombre_planeta) {
 		if existe_ciudad(nombre_planeta, nombre_ciudad) {
-			f, _ := os.Open(nombre_planeta + ".txt")
+			f, _ := os.Open("archivos/" + nombre_planeta + ".txt")
 			defer f.Close()
 
 			// Splits on newlines by default.
@@ -239,18 +251,21 @@ func eliminar_ciudad(nombre_planeta string, nombre_ciudad string) {
 					nuevo_texto = nuevo_texto + scanner.Text() + "\n"
 				}
 			}
-			e := os.Remove(nombre_planeta + ".txt")
+			e := os.Remove("archivos/" + nombre_planeta + ".txt")
 			if e != nil {
 				log.Fatal(e)
 			}
-			crear_planeta(nombre_planeta)
+			crear_planeta(nombre_planeta, false)
 			escribir_archivo(nombre_planeta, nuevo_texto)
+			if logear {
+				add_log(nombre_planeta, nombre_ciudad, "0", "DeleteCity")
+			}
 		}
 	}
 }
 
 func obtener_rebeldes(nombre_planeta string, nombre_ciudad string) int32 {
-	f, err := os.Open(nombre_planeta + ".txt")
+	f, err := os.Open("archivos/" + nombre_planeta + ".txt")
 	if err != nil {
 		return -1
 	}
@@ -292,12 +307,12 @@ func merge(log_recibido string, num_servidor_log int32) {
 		} else if accion == "AddCity" {
 			temp_int, _ = strconv.Atoi(strings.Split(linea, " ")[3])
 			cant_soldados = int32(temp_int)
-			crear_ciudad(nombre_planeta, nombre_ciudad, cant_soldados)
+			crear_ciudad(nombre_planeta, nombre_ciudad, cant_soldados, true)
 		} else if accion == "UpdateName" {
 			nuevo_nombre_ciudad = strings.Split(linea, " ")[3]
 			actualizar_nombre_ciudad(nombre_planeta, nombre_ciudad, nuevo_nombre_ciudad)
 		} else if accion == "DeleteCity" {
-			eliminar_ciudad(nombre_planeta, nombre_ciudad)
+			eliminar_ciudad(nombre_planeta, nombre_ciudad, true)
 		}
 		actualizar_reloj(nombre_planeta, num_servidor_log)
 	}
@@ -306,12 +321,12 @@ func merge(log_recibido string, num_servidor_log int32) {
 
 func clean_logs() {
 	for i := 0; i < len(planetas); i++ {
-		e := os.Remove(planetas[i].nombre_planeta + ".txt")
+		e := os.Remove("archivos/" + planetas[i].nombre_planeta + ".txt")
 		if e != nil {
 			log.Fatal(e)
 		}
 
-		f, err := os.Create(planetas[i].nombre_planeta + ".txt")
+		f, err := os.Create("archivos/" + planetas[i].nombre_planeta + ".txt")
 
 		if err != nil {
 			log.Fatal(err)
@@ -361,7 +376,7 @@ func actualizar_merge_archivos(data string) {
 			if existe_planeta(planeta_actual) {
 				escribir_archivo(planeta_actual, info_planeta)
 			} else {
-				crear_planeta(planeta_actual)
+				crear_planeta(planeta_actual, false)
 				escribir_archivo(planeta_actual, info_planeta)
 			}
 			info_planeta = ""
@@ -371,7 +386,7 @@ func actualizar_merge_archivos(data string) {
 	if existe_planeta(planeta_actual) {
 		escribir_archivo(planeta_actual, info_planeta)
 	} else {
-		crear_planeta(planeta_actual)
+		crear_planeta(planeta_actual, false)
 		escribir_archivo(planeta_actual, info_planeta)
 	}
 }
@@ -439,7 +454,7 @@ func (s *server) AskedServer(ctx context.Context, in *pb.AskedServerRequest) (*p
 		string_soldados := splitted_comando[3]
 		int_soldados, _ := strconv.Atoi(string_soldados)
 		cant_soldados := int32(int_soldados)
-		crear_ciudad(nombre_planeta, nombre_ciudad, cant_soldados)
+		crear_ciudad(nombre_planeta, nombre_ciudad, cant_soldados, true)
 		reloj = actualizar_reloj(nombre_planeta, num_servidor)
 
 	} else if splitted_comando[0] == "UpdateName" {
@@ -464,7 +479,7 @@ func (s *server) AskedServer(ctx context.Context, in *pb.AskedServerRequest) (*p
 		log.Println("[DeleteCity]")
 		nombre_planeta := splitted_comando[1]
 		nombre_ciudad := splitted_comando[2]
-		eliminar_ciudad(nombre_planeta, nombre_ciudad)
+		eliminar_ciudad(nombre_planeta, nombre_ciudad, true)
 		reloj = actualizar_reloj(nombre_planeta, num_servidor)
 	}
 
@@ -490,7 +505,11 @@ func main() {
 			panic("cannot initialize the server" + err.Error())
 		}
 	}()
-
+	os.RemoveAll("archivos/")
+	err := os.Mkdir("archivos", 0755)
+	if err != nil {
+		log.Fatal(err)
+	}
 	var opcion string
 	fmt.Println("Eres el servidor dominante?")
 	fmt.Println("\t [1] Si")
