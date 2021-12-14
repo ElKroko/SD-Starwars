@@ -50,7 +50,7 @@ func escribir_archivo(nombre_archivo string, texto string) {
 	datawriter := bufio.NewWriter(f)
 
 	fstat, _ := f.Stat()
-
+	log.Println("[Escribir archivo] nombre: " + nombre_archivo + " [Texto a escribir]: " + texto)
 	if fstat.Size() == 0 {
 		_, _ = datawriter.WriteString(texto)
 	} else {
@@ -119,7 +119,6 @@ func log_string() string {
 			}
 		}
 	}
-
 	return nuevo_texto
 }
 
@@ -483,11 +482,13 @@ func actualizar_merge_planetas(data string) {
 			info_planeta = info_planeta + lineas[i]
 		}
 	}
-	if existe_planeta(planeta_actual) {
-		escribir_archivo(planeta_actual, info_planeta)
-	} else {
-		crear_planeta(planeta_actual, false)
-		escribir_archivo(planeta_actual, info_planeta)
+	if planeta_actual == "" {
+		if existe_planeta(planeta_actual) {
+			escribir_archivo(planeta_actual, info_planeta)
+		} else {
+			crear_planeta(planeta_actual, false)
+			escribir_archivo(planeta_actual, info_planeta)
+		}
 	}
 }
 
