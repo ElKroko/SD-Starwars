@@ -158,7 +158,7 @@ func main() {
 	var reloj []int32
 	var servidor string
 
-	conn, err := grpc.Dial("localhost:8080", grpc.WithInsecure()) // Conectamos al IP de 10.6.43.109:8080, el lider.
+	conn, err := grpc.Dial("10.6.43.109:8080", grpc.WithInsecure()) // Conectamos al IP de 10.6.43.109:8080, el lider.
 	if err != nil {
 		panic("cannot connect with server " + err.Error())
 	}
