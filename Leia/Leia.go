@@ -67,13 +67,13 @@ func crear_Ciudad(nombre_ciudad string, cant_soldados int32) Ciudad {
 	return ciudad
 }
 
-func crear_Planeta(nombre_planeta string, ultimo_reloj []int32, ultimo_servidor string, nombre_ciudad string, cant_soldados int32) Planeta {
+func crear_Planeta(nombre_planeta string, ultimo_reloj []int32, ultimo_servidor string, nombre_ciudad string, cant_soldados int32) {
 	ciudad := crear_Ciudad(nombre_ciudad, cant_soldados)
 
 	lista_ciudades := [1]Ciudad{ciudad}
 	planeta := Planeta{nombre_planeta, lista_ciudades[:], ultimo_reloj[:], ultimo_servidor}
 
-	return planeta
+	planetas = append(planetas, planeta)
 }
 
 // Para usar cuando se hace un get y el planeta ya existe y MONOLYTIC READS TRUE
