@@ -254,9 +254,17 @@ func ConectarServidores(comando string) (reloj []int32, servidor string) {
 	}
 
 	// Read your writes
+	servidor_a_conectar = res.GetServidor()
+	log.Println("El Broker me indico conectar con:", servidor_a_conectar)
+
+	conn3, err3 := grpc.Dial(servidor_a_conectar+":8081", grpc.WithInsecure()) // Conexion con el Servidor, cambiar ip por respuesta de servidor
+	if err3 != nil {
+		panic("cannot connect with server " + err3.Error())
+	}
+	serviceClient3 := pb.NewStarwarsGameClient(conn3)
 	planeta := splitted_comando[1]
 	ciudad := splitted_comando[2]
-	res1, err1 := serviceClient.GetCantSoldados(context.Background(), &pb.GetCantSoldadosRequest{Planeta: planeta, Ciudad: ciudad})
+	res1, err1 := serviceClient3.GetCantSoldados(context.Background(), &pb.GetCantSoldadosRequest{Planeta: planeta, Ciudad: ciudad})
 	if err1 != nil {
 		panic("No se pudo hacer el GET  " + err1.Error())
 	}
@@ -268,7 +276,7 @@ func ConectarServidores(comando string) (reloj []int32, servidor string) {
 	for read == false {
 		log.Println("Entro a Read your Writes")
 
-		res2, err2 := serviceClient.MergeInformanteServer(context.Background(), &pb.MergeInformanteServerRequest{Planeta: planeta, Ciudad: ciudad})
+		res2, err2 := serviceClient3.MergeInformanteServer(context.Background(), &pb.MergeInformanteServerRequest{Planeta: planeta, Ciudad: ciudad})
 		if err2 != nil {
 			panic("No se pudo hacer el GET  " + err2.Error())
 		}
