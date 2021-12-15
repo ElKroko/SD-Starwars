@@ -21,7 +21,8 @@ type StarwarsGameClient interface {
 	// Funciones para Leia
 	GetCantSoldadosBroker(ctx context.Context, in *GetBrokerRequest, opts ...grpc.CallOption) (*GetBrokerReply, error)
 	GetCantSoldadosServer(ctx context.Context, in *GetServerRequest, opts ...grpc.CallOption) (*GetServerReply, error)
-	MergeLeia(ctx context.Context, in *MergeLeiaRequest, opts ...grpc.CallOption) (*MergeLeiaReply, error)
+	MergeLeiaBroker(ctx context.Context, in *MergeLeiaRequest, opts ...grpc.CallOption) (*MergeLeiaReply, error)
+	MergeLeiaServer(ctx context.Context, in *MergeLeiaServerRequest, opts ...grpc.CallOption) (*MergeLeiaServerReply, error)
 	// Funciones para Informantes
 	AskForServers(ctx context.Context, in *AskForServersRequest, opts ...grpc.CallOption) (*AskForServersReply, error)
 	AskedServer(ctx context.Context, in *AskedServerRequest, opts ...grpc.CallOption) (*AskedServerReply, error)
@@ -55,9 +56,18 @@ func (c *starwarsGameClient) GetCantSoldadosServer(ctx context.Context, in *GetS
 	return out, nil
 }
 
-func (c *starwarsGameClient) MergeLeia(ctx context.Context, in *MergeLeiaRequest, opts ...grpc.CallOption) (*MergeLeiaReply, error) {
+func (c *starwarsGameClient) MergeLeiaBroker(ctx context.Context, in *MergeLeiaRequest, opts ...grpc.CallOption) (*MergeLeiaReply, error) {
 	out := new(MergeLeiaReply)
-	err := c.cc.Invoke(ctx, "/proto.StarwarsGame/MergeLeia", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.StarwarsGame/MergeLeiaBroker", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *starwarsGameClient) MergeLeiaServer(ctx context.Context, in *MergeLeiaServerRequest, opts ...grpc.CallOption) (*MergeLeiaServerReply, error) {
+	out := new(MergeLeiaServerReply)
+	err := c.cc.Invoke(ctx, "/proto.StarwarsGame/MergeLeiaServer", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +117,8 @@ type StarwarsGameServer interface {
 	// Funciones para Leia
 	GetCantSoldadosBroker(context.Context, *GetBrokerRequest) (*GetBrokerReply, error)
 	GetCantSoldadosServer(context.Context, *GetServerRequest) (*GetServerReply, error)
-	MergeLeia(context.Context, *MergeLeiaRequest) (*MergeLeiaReply, error)
+	MergeLeiaBroker(context.Context, *MergeLeiaRequest) (*MergeLeiaReply, error)
+	MergeLeiaServer(context.Context, *MergeLeiaServerRequest) (*MergeLeiaServerReply, error)
 	// Funciones para Informantes
 	AskForServers(context.Context, *AskForServersRequest) (*AskForServersReply, error)
 	AskedServer(context.Context, *AskedServerRequest) (*AskedServerReply, error)
@@ -126,8 +137,11 @@ func (UnimplementedStarwarsGameServer) GetCantSoldadosBroker(context.Context, *G
 func (UnimplementedStarwarsGameServer) GetCantSoldadosServer(context.Context, *GetServerRequest) (*GetServerReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCantSoldadosServer not implemented")
 }
-func (UnimplementedStarwarsGameServer) MergeLeia(context.Context, *MergeLeiaRequest) (*MergeLeiaReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method MergeLeia not implemented")
+func (UnimplementedStarwarsGameServer) MergeLeiaBroker(context.Context, *MergeLeiaRequest) (*MergeLeiaReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MergeLeiaBroker not implemented")
+}
+func (UnimplementedStarwarsGameServer) MergeLeiaServer(context.Context, *MergeLeiaServerRequest) (*MergeLeiaServerReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MergeLeiaServer not implemented")
 }
 func (UnimplementedStarwarsGameServer) AskForServers(context.Context, *AskForServersRequest) (*AskForServersReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AskForServers not implemented")
@@ -190,20 +204,38 @@ func _StarwarsGame_GetCantSoldadosServer_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
-func _StarwarsGame_MergeLeia_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _StarwarsGame_MergeLeiaBroker_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MergeLeiaRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StarwarsGameServer).MergeLeia(ctx, in)
+		return srv.(StarwarsGameServer).MergeLeiaBroker(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.StarwarsGame/MergeLeia",
+		FullMethod: "/proto.StarwarsGame/MergeLeiaBroker",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StarwarsGameServer).MergeLeia(ctx, req.(*MergeLeiaRequest))
+		return srv.(StarwarsGameServer).MergeLeiaBroker(ctx, req.(*MergeLeiaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StarwarsGame_MergeLeiaServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MergeLeiaServerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StarwarsGameServer).MergeLeiaServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.StarwarsGame/MergeLeiaServer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StarwarsGameServer).MergeLeiaServer(ctx, req.(*MergeLeiaServerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -296,8 +328,12 @@ var StarwarsGame_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _StarwarsGame_GetCantSoldadosServer_Handler,
 		},
 		{
-			MethodName: "MergeLeia",
-			Handler:    _StarwarsGame_MergeLeia_Handler,
+			MethodName: "MergeLeiaBroker",
+			Handler:    _StarwarsGame_MergeLeiaBroker_Handler,
+		},
+		{
+			MethodName: "MergeLeiaServer",
+			Handler:    _StarwarsGame_MergeLeiaServer_Handler,
 		},
 		{
 			MethodName: "AskForServers",

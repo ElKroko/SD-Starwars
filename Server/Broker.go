@@ -48,7 +48,7 @@ func (s *server) GetCantSoldadosBroker(ctx context.Context, in *pb.GetBrokerRequ
 
 }
 
-func (s *server) MergeLeia(ctx context.Context, in *pb.MergeLeiaRequest) (*pb.MergeLeiaReply, error) {
+func (s *server) MergeLeiaBroker(ctx context.Context, in *pb.MergeLeiaRequest) (*pb.MergeLeiaReply, error) {
 	log.Printf("Nos piden un merge!")
 	cant_solicitudes += 1
 	planeta := in.GetPlaneta()
@@ -56,11 +56,16 @@ func (s *server) MergeLeia(ctx context.Context, in *pb.MergeLeiaRequest) (*pb.Me
 
 	log.Printf("Planeta: %s \t Ciudad: %s", planeta, ciudad)
 
-	var cant_rebeldes = 1
-	var reloj []int32
-	reloj[0] = 0
-	reloj[1] = 1
-	reloj[2] = 2
+	conn, err := grpc.Dial("10.6.43.110"+":8081", grpc.WithInsecure()) // Conectamos al IP del servidor respondido x broker
+	if err != nil {
+		panic("cannot connect with server " + err.Error())
+	}
+	serviceClient := pb.NewStarwarsGameClient(conn)
+
+	res, err := serviceClient.MergeLeiaServer(context.Background(), &pb.MergeLeiaServerRequest{Planeta: planeta, Ciudad: ciudad})
+
+	cant_rebeldes := res.GetRebeldes()
+	reloj := res.GetReloj()
 	servidor := getRandomServer()
 
 	return &pb.MergeLeiaReply{Rebeldes: int32(cant_rebeldes), Reloj: reloj, Servidor: servidor}, nil

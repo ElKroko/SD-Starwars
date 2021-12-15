@@ -125,7 +125,7 @@ func buscar_ciudad(lista_ciudades []Ciudad, nombre_buscado string) int32 {
 //
 //		Monolytic Reads if false hay que pedir merge
 //
-func monolityc_reads(planeta string, reloj_server []int32) bool {
+func monotonic_reads(planeta string, reloj_server []int32) bool {
 	var num_servidor int32
 	num_planeta := buscar_Planeta(planeta)
 	if num_planeta == -1 {
@@ -211,15 +211,15 @@ func main() {
 			reloj = res.GetReloj()
 			servidor = res.GetServidor()
 
-			monolityc := monolityc_reads(planeta, reloj)
-			if monolityc == false {
-				res, err := serviceClient.MergeLeia(context.Background(), &pb.MergeLeiaRequest{Planeta: planeta, Ciudad: ciudad})
+			monotonic := monotonic_reads(planeta, reloj)
+			for monotonic == false {
+				res, err := serviceClient.MergeLeiaBroker(context.Background(), &pb.MergeLeiaRequest{Planeta: planeta, Ciudad: ciudad})
 				if err != nil {
 					panic("No se pudo hacer el GET  " + err.Error())
 				}
 				cant_soldados = res.GetRebeldes()
 				reloj = res.GetReloj()
-				servidor = res.GetServidor()
+				monotonic = monotonic_reads(planeta, reloj)
 			}
 
 			fmt.Println("Cantidad soldados: ", cant_soldados)

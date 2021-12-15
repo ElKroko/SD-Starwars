@@ -9,7 +9,9 @@ service StarwarsGame {
     // Funciones para Leia
     rpc GetCantSoldadosBroker (GetBrokerRequest) returns (GetBrokerReply) {}
     rpc GetCantSoldadosServer (GetServerRequest) returns (GetServerReply) {}
-    rpc MergeLeia (MergeLeiaRequest) returns (MergeLeiaReply) {}
+    rpc MergeLeiaBroker (MergeLeiaRequest) returns (MergeLeiaReply) {}
+
+    rpc MergeLeiaServer (MergeLeiaServerRequest) returns (MergeLeiaServerReply) {}
 
     // Funciones para Informantes
     rpc AskForServers (AskForServersRequest) returns (AskForServersReply) {}
@@ -49,6 +51,17 @@ message MergeLeiaRequest {
 }
 
 message MergeLeiaReply {
+    int32 rebeldes = 1;
+    repeated int32 reloj = 2;
+    string servidor = 3;
+}
+
+message MergeLeiaServerRequest {
+    string planeta = 1;
+    string ciudad = 2;
+}
+
+message MergeLeiaServerReply {
     int32 rebeldes = 1;
     repeated int32 reloj = 2;
     string servidor = 3;
