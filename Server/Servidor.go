@@ -50,7 +50,6 @@ func escribir_archivo(nombre_archivo string, texto string) {
 	datawriter := bufio.NewWriter(f)
 
 	fstat, _ := f.Stat()
-	log.Println("[Escribir archivo] nombre: " + nombre_archivo + " [Texto a escribir]: " + texto)
 	if fstat.Size() == 0 {
 		_, _ = datawriter.WriteString(texto)
 	} else {
@@ -73,7 +72,6 @@ func escribir_archivo2(nombre_archivo string, texto string) {
 
 	defer f.Close()
 
-	log.Println("[Escribir archivo] nombre: " + nombre_archivo + " [Texto a escribir]: " + texto)
 	if fi.Size() == 0 {
 		_, err2 := f.WriteString(texto)
 		if err2 != nil {
@@ -251,7 +249,6 @@ func crear_ciudad(nombre_planeta string, nombre_ciudad string, cant_soldados int
 		}
 
 	} else {
-		log.Println("Crear ciudad: " + nombre_planeta)
 		crear_planeta(nombre_planeta, true)
 		escribir_archivo(nombre_planeta, nombre_planeta+" "+nombre_ciudad+" "+fmt.Sprint(cant_soldados))
 		if logear {
@@ -345,7 +342,7 @@ func obtener_rebeldes(nombre_planeta string, nombre_ciudad string) int32 {
 		line := strings.Split(scanner.Text(), " ")
 		if line[1] == nombre_ciudad {
 			cant_soldados, _ := strconv.Atoi(line[2])
-			fmt.Println(cant_soldados)
+			fmt.Println("[GetRebeldes] cantidad soldados: ", cant_soldados)
 			return int32(cant_soldados)
 		}
 	}
@@ -431,7 +428,6 @@ func merge_conexion(IP string) {
 		panic("No se pudo hacer conexion de merge  " + err.Error())
 	}
 	log2 := res.GetLog()
-	log.Print("[Log recibido]: " + log2)
 	num_servidor_log := res.GetServidor()
 	merge(log2, num_servidor_log)
 }
@@ -460,8 +456,6 @@ func merge_todo(IP1 string, IP2 string) {
 
 	reloj := reloj_string()
 	planetas_merge := planetas_string()
-	log.Println("[PreMerge] Planetas merge: ", planetas_merge)
-	log.Println("[PreMerge] Reloj merge: ", reloj)
 
 	ack1 := postmerge_conexion(IP1, reloj, planetas_merge)
 	ack2 := postmerge_conexion(IP2, reloj, planetas_merge)
@@ -551,10 +545,8 @@ func actualizar_merge_reloj(data string) {
 //
 
 func (s *server) GetLogs(ctx context.Context, in *pb.GetLogsRequest) (*pb.GetLogsReply, error) {
-	log.Println("El servidor", in.GetNumserver(), " esta mandando un GetLogs")
 
 	log_a_enviar := log_string()
-	log.Println("[Log a enviar]: " + log_a_enviar)
 
 	// Revisar que enviar de servidor, si su IP o el numero  que lo identifica
 
@@ -567,7 +559,6 @@ func (s *server) PostMerge(ctx context.Context, in *pb.PostMergeRequest) (*pb.Po
 
 	reloj := in.GetReloj()
 	planetas_merge := in.GetPlanetas()
-	log.Println("[PostMerge] Reloj Merge: ", reloj, "\tPlanetas merge: ", planetas_merge)
 
 	clean_planetas()
 	actualizar_merge_planetas(planetas_merge)
@@ -578,13 +569,13 @@ func (s *server) PostMerge(ctx context.Context, in *pb.PostMergeRequest) (*pb.Po
 }
 
 func (s *server) GetCantSoldadosServer(ctx context.Context, in *pb.GetServerRequest) (*pb.GetServerReply, error) {
-	log.Printf("Estan haciendo request!")
+	log.Println("Estan haciendo request!")
 	planeta := in.GetPlaneta()
 	ciudad := in.GetCiudad()
 
 	cant_soldados := obtener_rebeldes(planeta, ciudad)
 	log.Printf("Planeta: %s \t Ciudad: %s", planeta, ciudad)
-	var reloj = []int32{1, 0, 0}
+	var reloj = obtener_reloj(planeta)
 
 	return &pb.GetServerReply{Rebeldes: cant_soldados, Reloj: reloj}, nil
 }
@@ -699,7 +690,7 @@ func main() {
 	if num_servidor == 0 {
 		for flag_opcion {
 			fmt.Println("En 2 minutos se hara un merge")
-			time.Sleep(30 * time.Second) //cambiar esto!!!!!!****!*!*!*!*!*!
+			time.Sleep(120 * time.Second) //cambiar esto!!!!!!****!*!*!*!*!*!
 			merge_todo("10.6.43.111", "10.6.43.112")
 			fmt.Println("Merge Realizado")
 			fmt.Println(planetas)

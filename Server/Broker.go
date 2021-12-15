@@ -32,7 +32,7 @@ func (s *server) GetCantSoldadosBroker(ctx context.Context, in *pb.GetBrokerRequ
 
 	servidor := getRandomServer() // Este server tiene que ser utilizado en vez de localhost
 
-	conn, err := grpc.Dial("localhost:8081", grpc.WithInsecure()) // Conectamos al IP de 10.6.43.109:8080, el lider.
+	conn, err := grpc.Dial(servidor+":8081", grpc.WithInsecure()) // Conectamos al IP del servidor respondido x broker
 	if err != nil {
 		panic("cannot connect with server " + err.Error())
 	}
