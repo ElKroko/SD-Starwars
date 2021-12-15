@@ -470,9 +470,11 @@ func actualizar_merge_planetas(data string) {
 		if planeta != planeta_actual {
 			if existe_planeta(planeta_actual) {
 				escribir_archivo(planeta_actual, info_planeta)
+				planeta_actual = planeta
 			} else {
 				crear_planeta(planeta_actual, true)
 				escribir_archivo(planeta_actual, info_planeta)
+				planeta_actual = planeta
 			}
 			info_planeta = ""
 		}
@@ -502,7 +504,7 @@ func actualizar_merge_reloj(data string) {
 	for i := 0; i < len(lineas); i++ {
 		linea = strings.Split(lineas[i], " ")
 		planeta := linea[0]
-		if planeta == "" {
+		if planeta != "" {
 			if !existe_planeta(planeta) {
 				crear_planeta(planeta, true)
 				reloj_actual = []int32{0, 0, 0}
