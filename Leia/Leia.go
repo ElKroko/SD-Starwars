@@ -77,17 +77,17 @@ func crear_Planeta(nombre_planeta string, ultimo_reloj []int32, ultimo_servidor 
 }
 
 // Para usar cuando se hace un get y el planeta ya existe y MONOLYTIC READS TRUE
-func update_Planeta(planeta Planeta, ultimo_reloj []int32, ultimo_servidor string, nombre_ciudad string, cant_soldados int32) {
-	esta_ciudad := buscar_ciudad(planeta.lista_ciudades, nombre_ciudad)
+func update_Planeta(planeta int32, ultimo_reloj []int32, ultimo_servidor string, nombre_ciudad string, cant_soldados int32) {
+	esta_ciudad := buscar_ciudad(planetas[planeta].lista_ciudades, nombre_ciudad)
 	if esta_ciudad > -1 { // Que pasa si la ciudad existe
-		planeta.lista_ciudades[esta_ciudad].cant_soldados = cant_soldados
+		planetas[planeta].lista_ciudades[esta_ciudad].cant_soldados = cant_soldados
 	} else { // que pasa si la ciudad no existe
 		ciudad := crear_Ciudad(nombre_ciudad, cant_soldados)
-		planeta.lista_ciudades = append(planeta.lista_ciudades, ciudad)
+		planetas[planeta].lista_ciudades = append(planetas[planeta].lista_ciudades, ciudad)
 	}
 
-	planeta.ultimo_reloj = ultimo_reloj
-	planeta.ultimo_servidor = ultimo_servidor
+	planetas[planeta].ultimo_reloj = ultimo_reloj
+	planetas[planeta].ultimo_servidor = ultimo_servidor
 
 }
 
@@ -232,12 +232,13 @@ func main() {
 			fmt.Println("Cantidad soldados: ", cant_soldados)
 
 			if cant_soldados > -1 {
+
 				fmt.Println("Cantidad soldados: ", cant_soldados)
 				if buscar_Planeta(planeta) == -1 {
 					crear_Planeta(planeta, reloj, servidor, ciudad, cant_soldados)
 					fmt.Println("cree planeta! \n")
 				} else {
-					update_Planeta(planetas[buscar_Planeta(planeta)], reloj, servidor, ciudad, cant_soldados)
+					update_Planeta(buscar_Planeta(planeta), reloj, servidor, ciudad, cant_soldados)
 				}
 			} else {
 				fmt.Println("Planeta no existe")
