@@ -211,8 +211,12 @@ func main() {
 			reloj = res.GetReloj()
 			servidor = res.GetServidor()
 
+			log.Println("[PreMono] Reloj: ", reloj)
+
 			monotonic := monotonic_reads(planeta, reloj)
 			for monotonic == false {
+				log.Println("Entro a Monotonic")
+
 				res, err := serviceClient.MergeLeiaBroker(context.Background(), &pb.MergeLeiaRequest{Planeta: planeta, Ciudad: ciudad})
 				if err != nil {
 					panic("No se pudo hacer el GET  " + err.Error())
@@ -220,6 +224,7 @@ func main() {
 				cant_soldados = res.GetRebeldes()
 				reloj = res.GetReloj()
 				monotonic = monotonic_reads(planeta, reloj)
+				log.Println("[PostMono] Reloj: ", reloj)
 			}
 
 			fmt.Println("Cantidad soldados: ", cant_soldados)
