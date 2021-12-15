@@ -231,12 +231,19 @@ func main() {
 
 			fmt.Println("Cantidad soldados: ", cant_soldados)
 
-			if buscar_Planeta(planeta) == -1 {
-				crear_Planeta(planeta, reloj, servidor, ciudad, cant_soldados)
-				fmt.Println("cree planeta! \n")
+			if cant_soldados > -1 {
+				fmt.Println("Cantidad soldados: ", cant_soldados)
+				if buscar_Planeta(planeta) == -1 {
+					crear_Planeta(planeta, reloj, servidor, ciudad, cant_soldados)
+					fmt.Println("cree planeta! \n")
+				} else {
+					update_Planeta(planetas[buscar_Planeta(planeta)], reloj, servidor, ciudad, cant_soldados)
+				}
 			} else {
-				update_Planeta(planetas[buscar_Planeta(planeta)], reloj, servidor, ciudad, cant_soldados)
+				fmt.Println("Planeta no existe")
 			}
+			fmt.Println()
+			fmt.Println(planetas)
 
 		} else if accion == "2" {
 			fmt.Println("Adios")
