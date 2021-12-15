@@ -345,6 +345,7 @@ func obtener_rebeldes(nombre_planeta string, nombre_ciudad string) int32 {
 		line := strings.Split(scanner.Text(), " ")
 		if line[1] == nombre_ciudad {
 			cant_soldados, _ := strconv.Atoi(line[2])
+			fmt.Println(cant_soldados)
 			return int32(cant_soldados)
 		}
 	}
