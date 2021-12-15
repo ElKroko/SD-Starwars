@@ -26,6 +26,8 @@ type StarwarsGameClient interface {
 	// Funciones para Informantes
 	AskForServers(ctx context.Context, in *AskForServersRequest, opts ...grpc.CallOption) (*AskForServersReply, error)
 	AskedServer(ctx context.Context, in *AskedServerRequest, opts ...grpc.CallOption) (*AskedServerReply, error)
+	GetCantSoldados(ctx context.Context, in *GetCantSoldadosRequest, opts ...grpc.CallOption) (*GetCantSoldadosReply, error)
+	MergeInformanteServer(ctx context.Context, in *MergeInformanteServerRequest, opts ...grpc.CallOption) (*MergeInformanteServerReply, error)
 	GetLogs(ctx context.Context, in *GetLogsRequest, opts ...grpc.CallOption) (*GetLogsReply, error)
 	PostMerge(ctx context.Context, in *PostMergeRequest, opts ...grpc.CallOption) (*PostMergeReply, error)
 }
@@ -92,6 +94,24 @@ func (c *starwarsGameClient) AskedServer(ctx context.Context, in *AskedServerReq
 	return out, nil
 }
 
+func (c *starwarsGameClient) GetCantSoldados(ctx context.Context, in *GetCantSoldadosRequest, opts ...grpc.CallOption) (*GetCantSoldadosReply, error) {
+	out := new(GetCantSoldadosReply)
+	err := c.cc.Invoke(ctx, "/proto.StarwarsGame/GetCantSoldados", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *starwarsGameClient) MergeInformanteServer(ctx context.Context, in *MergeInformanteServerRequest, opts ...grpc.CallOption) (*MergeInformanteServerReply, error) {
+	out := new(MergeInformanteServerReply)
+	err := c.cc.Invoke(ctx, "/proto.StarwarsGame/MergeInformanteServer", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *starwarsGameClient) GetLogs(ctx context.Context, in *GetLogsRequest, opts ...grpc.CallOption) (*GetLogsReply, error) {
 	out := new(GetLogsReply)
 	err := c.cc.Invoke(ctx, "/proto.StarwarsGame/GetLogs", in, out, opts...)
@@ -122,6 +142,8 @@ type StarwarsGameServer interface {
 	// Funciones para Informantes
 	AskForServers(context.Context, *AskForServersRequest) (*AskForServersReply, error)
 	AskedServer(context.Context, *AskedServerRequest) (*AskedServerReply, error)
+	GetCantSoldados(context.Context, *GetCantSoldadosRequest) (*GetCantSoldadosReply, error)
+	MergeInformanteServer(context.Context, *MergeInformanteServerRequest) (*MergeInformanteServerReply, error)
 	GetLogs(context.Context, *GetLogsRequest) (*GetLogsReply, error)
 	PostMerge(context.Context, *PostMergeRequest) (*PostMergeReply, error)
 	mustEmbedUnimplementedStarwarsGameServer()
@@ -148,6 +170,12 @@ func (UnimplementedStarwarsGameServer) AskForServers(context.Context, *AskForSer
 }
 func (UnimplementedStarwarsGameServer) AskedServer(context.Context, *AskedServerRequest) (*AskedServerReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AskedServer not implemented")
+}
+func (UnimplementedStarwarsGameServer) GetCantSoldados(context.Context, *GetCantSoldadosRequest) (*GetCantSoldadosReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCantSoldados not implemented")
+}
+func (UnimplementedStarwarsGameServer) MergeInformanteServer(context.Context, *MergeInformanteServerRequest) (*MergeInformanteServerReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MergeInformanteServer not implemented")
 }
 func (UnimplementedStarwarsGameServer) GetLogs(context.Context, *GetLogsRequest) (*GetLogsReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLogs not implemented")
@@ -276,6 +304,42 @@ func _StarwarsGame_AskedServer_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StarwarsGame_GetCantSoldados_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCantSoldadosRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StarwarsGameServer).GetCantSoldados(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.StarwarsGame/GetCantSoldados",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StarwarsGameServer).GetCantSoldados(ctx, req.(*GetCantSoldadosRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StarwarsGame_MergeInformanteServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MergeInformanteServerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StarwarsGameServer).MergeInformanteServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.StarwarsGame/MergeInformanteServer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StarwarsGameServer).MergeInformanteServer(ctx, req.(*MergeInformanteServerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StarwarsGame_GetLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetLogsRequest)
 	if err := dec(in); err != nil {
@@ -342,6 +406,14 @@ var StarwarsGame_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AskedServer",
 			Handler:    _StarwarsGame_AskedServer_Handler,
+		},
+		{
+			MethodName: "GetCantSoldados",
+			Handler:    _StarwarsGame_GetCantSoldados_Handler,
+		},
+		{
+			MethodName: "MergeInformanteServer",
+			Handler:    _StarwarsGame_MergeInformanteServer_Handler,
 		},
 		{
 			MethodName: "GetLogs",

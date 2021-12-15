@@ -598,6 +598,18 @@ func (s *server) MergeLeiaServer(ctx context.Context, in *pb.MergeLeiaServerRequ
 	return &pb.MergeLeiaServerReply{Rebeldes: cant_soldados, Reloj: reloj}, nil
 }
 
+func (s *server) MergeInformanteServer(ctx context.Context, in *pb.MergeInformanteServerRequest) (*pb.MergeInformanteServerReply, error) {
+
+	planeta := in.GetPlaneta()
+	ciudad := in.GetCiudad()
+
+	merge_todo("10.6.43.111", "10.6.43.112")
+
+	cant_soldados := obtener_rebeldes(planeta, ciudad)
+	var reloj = obtener_reloj(planeta)
+	return &pb.MergeInformanteServerReply{Rebeldes: cant_soldados, Reloj: reloj}, nil
+}
+
 func (s *server) AskedServer(ctx context.Context, in *pb.AskedServerRequest) (*pb.AskedServerReply, error) {
 	log.Printf("El informante %s esta haciendo un comando!", in.GetInformante())
 
@@ -649,6 +661,19 @@ func (s *server) AskedServer(ctx context.Context, in *pb.AskedServerRequest) (*p
 
 	return &pb.AskedServerReply{Reloj: reloj}, nil
 
+}
+
+func (s *server) GetCantSoldados(ctx context.Context, in *pb.GetCantSoldadosRequest) (*pb.GetCantSoldadosReply, error) {
+
+	log.Println("Estan haciendo request!")
+	planeta := in.GetPlaneta()
+	ciudad := in.GetCiudad()
+
+	cant_soldados := obtener_rebeldes(planeta, ciudad)
+	log.Printf("Planeta: %s \t Ciudad: %s", planeta, ciudad)
+	var reloj = obtener_reloj(planeta)
+
+	return &pb.GetCantSoldadosReply{Rebeldes: cant_soldados, Reloj: reloj}, nil
 }
 
 func GetIP() string {

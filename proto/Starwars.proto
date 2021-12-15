@@ -10,13 +10,15 @@ service StarwarsGame {
     rpc GetCantSoldadosBroker (GetBrokerRequest) returns (GetBrokerReply) {}
     rpc GetCantSoldadosServer (GetServerRequest) returns (GetServerReply) {}
     rpc MergeLeiaBroker (MergeLeiaRequest) returns (MergeLeiaReply) {}
-
     rpc MergeLeiaServer (MergeLeiaServerRequest) returns (MergeLeiaServerReply) {}
 
     // Funciones para Informantes
     rpc AskForServers (AskForServersRequest) returns (AskForServersReply) {}
 
     rpc AskedServer (AskedServerRequest) returns (AskedServerReply) {}
+
+    rpc GetCantSoldados (GetCantSoldadosRequest) returns (GetCantSoldadosReply) {}
+    rpc MergeInformanteServer (MergeInformanteServerRequest) returns (MergeInformanteServerReply) {}
 
     // Funciones para Servers
 
@@ -45,6 +47,15 @@ message GetServerReply{
     repeated int32 reloj = 2;
 }
 
+message GetCantSoldadosRequest{
+    string planeta = 1;
+    string ciudad = 2;
+}
+message GetCantSoldadosReply{
+    int32 rebeldes = 1;
+    repeated int32 reloj = 2;
+}
+
 message MergeLeiaRequest {
     string planeta = 1;
     string ciudad = 2;
@@ -62,6 +73,19 @@ message MergeLeiaServerRequest {
 }
 
 message MergeLeiaServerReply {
+    int32 rebeldes = 1;
+    repeated int32 reloj = 2;
+    string servidor = 3;
+}
+
+
+
+message MergeInformanteServerRequest {
+    string planeta = 1;
+    string ciudad = 2;
+}
+
+message MergeInformanteServerReply {
     int32 rebeldes = 1;
     repeated int32 reloj = 2;
     string servidor = 3;

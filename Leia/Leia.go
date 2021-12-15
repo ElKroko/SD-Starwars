@@ -226,10 +226,7 @@ func main() {
 				cant_soldados = res.GetRebeldes()
 				reloj = res.GetReloj()
 				monotonic = monotonic_reads(planeta, reloj)
-				log.Println("[PostMono] Reloj: ", reloj)
 			}
-
-			fmt.Println("Cantidad soldados: ", cant_soldados)
 
 			if cant_soldados > -1 {
 

@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc"
 	pb "lab3/proto"
 	"log"
 	"net"
 	"strconv"
 	"strings"
+
+	"google.golang.org/grpc"
 )
 
 //
@@ -148,6 +149,29 @@ func read_your_write(planeta string, reloj_server []int32) bool {
 	return true
 }
 
+func read_your_writes(planeta string, reloj_server []int32) bool {
+	var num_servidor int32
+	num_planeta := buscar_Planeta(planeta)
+	if num_planeta == -1 {
+		return true
+	}
+
+	servidor := planetas[num_planeta].ultimo_servidor
+
+	if servidor == "10.6.43.110" {
+		num_servidor = 0
+	} else if servidor == "10.6.43.111" {
+		num_servidor = 1
+	} else {
+		num_servidor = 2
+	}
+	log.Println("\n"+"reloj planeta: ", planetas[num_planeta].ultimo_reloj[num_servidor], "reloj servidor: ", reloj_server[num_servidor])
+	if planetas[num_planeta].ultimo_reloj[num_servidor] > reloj_server[num_servidor] {
+		return false
+	}
+	return true
+}
+
 //
 //		gRPC
 //
@@ -176,16 +200,6 @@ func ConectarServidores(comando string) (reloj []int32, servidor string) {
 
 	// Revisar el comando y hacer cambios necesarios
 	splitted_comando := strings.Split(comando, " ")
-
-	// read := read_your_write(planeta, reloj)
-	// if read == false {
-	// 	res, err := serviceClient.MargeInformante(context.Background(), &pb.GetRequest{planeta: planeta, ciudad: ciudad, cant_soldados: cant_soldados})
-	// 	if err != nil {
-	// 		panic("No se pudo hacer el GET  " + err.Error())
-	// 	}
-	// 	reloj = res.GetReloj()
-	// 	servidor = res.GetServidor()
-	// }
 
 	if splitted_comando[0] == "AddCity" {
 		log.Println("[AddCity]")
@@ -239,7 +253,29 @@ func ConectarServidores(comando string) (reloj []int32, servidor string) {
 
 	}
 
-	// aqui
+	// Read your writes
+	planeta := splitted_comando[1]
+	ciudad := splitted_comando[2]
+	res1, err1 := serviceClient.GetCantSoldados(context.Background(), &pb.GetCantSoldadosRequest{Planeta: planeta, Ciudad: ciudad})
+	if err1 != nil {
+		panic("No se pudo hacer el GET  " + err1.Error())
+	}
+	reloj = res1.GetReloj()
+
+	log.Println("[PreRead] Reloj: ", reloj)
+
+	read := read_your_writes(planeta, reloj)
+	for read == false {
+		log.Println("Entro a Read your Writes")
+
+		res2, err2 := serviceClient.MergeInformanteServer(context.Background(), &pb.MergeInformanteServerRequest{Planeta: planeta, Ciudad: ciudad})
+		if err2 != nil {
+			panic("No se pudo hacer el GET  " + err2.Error())
+		}
+		reloj = res2.GetReloj()
+		read = read_your_writes(planeta, reloj)
+		log.Println("[PostRead] Reloj: ", reloj)
+	}
 
 	log.Println("El servidor me envio el reloj ", ultimo_reloj)
 
