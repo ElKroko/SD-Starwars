@@ -134,13 +134,13 @@ func crear_planeta(nombre_planeta string, logear bool) {
 		if err2 != nil {
 			log.Fatal(err2)
 		}
+
+		var nuevo_planeta Planeta
+
+		nuevo_planeta.nombre_planeta = nombre_planeta
+		nuevo_planeta.reloj = []int32{0, 0, 0}
+		planetas = append(planetas, nuevo_planeta)
 	}
-	var nuevo_planeta Planeta
-
-	nuevo_planeta.nombre_planeta = nombre_planeta
-	nuevo_planeta.reloj = []int32{0, 0, 0}
-
-	planetas = append(planetas, nuevo_planeta)
 }
 
 func actualizar_reloj(nombre_planeta string, num_servidor int32) []int32 {
@@ -253,7 +253,7 @@ func crear_ciudad(nombre_planeta string, nombre_ciudad string, cant_soldados int
 		}
 
 	} else {
-		crear_planeta(nombre_planeta, true)
+		crear_planeta(nombre_planeta, logear)
 		escribir_archivo(nombre_planeta, nombre_planeta+" "+nombre_ciudad+" "+fmt.Sprint(cant_soldados))
 		if logear {
 			add_log(nombre_planeta, nombre_ciudad, fmt.Sprint(cant_soldados), "AddCity")
