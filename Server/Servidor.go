@@ -154,6 +154,10 @@ func actualizar_reloj(nombre_planeta string, num_servidor int32) []int32 {
 }
 
 func obtener_reloj(nombre_planeta string) []int32 {
+	num_planeta := buscar_Planeta(nombre_planeta)
+	if num_planeta == -1 {
+		return []int32{0, 0, 0}
+	}
 	return planetas[buscar_Planeta(nombre_planeta)].reloj
 }
 
