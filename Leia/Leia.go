@@ -131,6 +131,7 @@ func monotonic_reads(planeta string, reloj_server []int32) bool {
 	if num_planeta == -1 {
 		return true
 	}
+
 	servidor := planetas[num_planeta].ultimo_servidor
 
 	if servidor == "10.6.43.110" {
@@ -140,6 +141,7 @@ func monotonic_reads(planeta string, reloj_server []int32) bool {
 	} else {
 		num_servidor = 2
 	}
+	log.Println("\n"+"reloj planeta: ", planetas[num_planeta].ultimo_reloj[num_servidor], "reloj servidor: ", reloj_server[num_servidor])
 	if planetas[num_planeta].ultimo_reloj[num_servidor] > reloj_server[num_servidor] {
 		return false
 	}
@@ -199,10 +201,10 @@ func main() {
 		fmt.Println("2) Cerrar la terminal")
 		fmt.Scanln(&accion)
 		if accion == "1" {
-			fmt.Println("Que ciudad desea buscar?")
-			fmt.Scanln(&ciudad)
 			fmt.Println("En que planeta queda la ciudad?")
 			fmt.Scanln(&planeta)
+			fmt.Println("Que ciudad desea buscar?")
+			fmt.Scanln(&ciudad)
 			res, err := serviceClient.GetCantSoldadosBroker(context.Background(), &pb.GetBrokerRequest{Planeta: planeta, Ciudad: ciudad})
 			if err != nil {
 				panic("No se pudo hacer el GET  " + err.Error())
@@ -231,6 +233,7 @@ func main() {
 
 			if buscar_Planeta(planeta) == -1 {
 				crear_Planeta(planeta, reloj, servidor, ciudad, cant_soldados)
+				fmt.Println("cree planeta! \n")
 			} else {
 				update_Planeta(planetas[buscar_Planeta(planeta)], reloj, servidor, ciudad, cant_soldados)
 			}
