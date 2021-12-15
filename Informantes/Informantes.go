@@ -273,7 +273,7 @@ func ConectarServidores(comando string) (reloj []int32, servidor string) {
 	log.Println("[PreRead] Reloj: ", reloj)
 
 	read := read_your_writes(planeta, reloj)
-	for read == false {
+	if read == false {
 		log.Println("Entro a Read your Writes")
 
 		res2, err2 := serviceClient3.MergeInformanteServer(context.Background(), &pb.MergeInformanteServerRequest{Planeta: planeta, Ciudad: ciudad})
