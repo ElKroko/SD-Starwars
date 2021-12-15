@@ -342,8 +342,8 @@ func obtener_rebeldes(nombre_planeta string, nombre_ciudad string) int32 {
 
 	// https://golang.org/pkg/bufio/#Scanner.Scan
 	for scanner.Scan() {
-		if strings.Contains(scanner.Text(), nombre_ciudad) {
-			line := strings.Split(scanner.Text(), " ")
+		line := strings.Split(scanner.Text(), " ")
+		if line[1] == nombre_ciudad {
 			cant_soldados, _ := strconv.Atoi(line[2])
 			return int32(cant_soldados)
 		}
