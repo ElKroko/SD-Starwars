@@ -403,6 +403,22 @@ func clean_logs() {
 	}
 }
 
+func clean_planetas() {
+	for i := 0; i < len(planetas); i++ {
+		e := os.Remove("archivos/" + planetas[i].nombre_planeta + ".txt")
+		if e != nil {
+			log.Fatal(e)
+		}
+
+		f, err := os.Create("archivos/" + planetas[i].nombre_planeta + ".txt")
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+	}
+}
+
 func merge_conexion(IP string) {
 	conn, err := grpc.Dial(IP+":8081", grpc.WithInsecure())
 	if err != nil {
@@ -484,7 +500,6 @@ func actualizar_merge_planetas(data string) {
 			info_planeta = info_planeta + lineas[i]
 		}
 	}
-	log.Println("\nMERGE PLANETA: " + planeta + "INFO PLANETA: " + info_planeta + "\n")
 	if planeta_actual == "" {
 		if existe_planeta(planeta_actual) {
 			escribir_archivo(planeta_actual, info_planeta)
@@ -553,6 +568,7 @@ func (s *server) PostMerge(ctx context.Context, in *pb.PostMergeRequest) (*pb.Po
 	planetas_merge := in.GetPlanetas()
 	log.Println("[PostMerge] Reloj Merge: ", reloj, "\tPlanetas merge: ", planetas_merge)
 
+	clean_planetas()
 	actualizar_merge_planetas(planetas_merge)
 	actualizar_merge_reloj(reloj)
 	clean_logs()
